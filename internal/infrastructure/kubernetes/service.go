@@ -66,10 +66,35 @@ func (i *Infra) expectedProxyService(infra *ir.Infra) (*corev1.Service, error) {
 			SessionAffinity: corev1.ServiceAffinityNone,
 			// Preserve the client source IP and avoid a second hop for LoadBalancer.
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+			ExternalIPs:           proxyAddressesToIPStrings(infra.Proxy.Addresses),
 		},
 	}
 
 	return svc, nil
+}
+
+func proxyAddressesToIPStrings(as []ir.ProxyAddress) []string {
+	ss := make([]string, 0, len(as))
+	for _, a := range as {
+		s := proxyAddressToIPString(a)
+		if s != "" {
+			ss = append(ss, s)
+		}
+	}
+	return ss
+}
+
+func proxyAddressToIPString(a ir.ProxyAddress) string {
+	switch impl := a.(type) {
+	case ir.ProxyHostname:
+		return ""
+	case ir.ProxyIPAddress:
+		return string(impl)
+	case ir.ProxyNamedAddress:
+		return ""
+	default:
+		return "" // TODO: should this panic?
+	}
 }
 
 // createOrUpdateproxyService creates a Service in the kube api server based on the provided infra,
