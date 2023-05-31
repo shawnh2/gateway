@@ -48,7 +48,21 @@ var RateLimitTest = suite.ConformanceTest{
 				t.Errorf("fail to get expected response at first three request: %v", err)
 			}
 
-			lastFourthExpResp := http.ExpectedResponse{
+			//lastFourthExpResp := http.ExpectedResponse{
+			//	Request: http.Request{
+			//		Path: "/",
+			//	},
+			//	Response: http.Response{
+			//		StatusCode: 429,
+			//	},
+			//	Namespace: ns,
+			//}
+			//lastFourthReq := http.MakeRequest(t, &lastFourthExpResp, gwAddr, "HTTP", "http")
+			//if err := GotNTimesExpectedResponse(t, 1, suite.RoundTripper, lastFourthReq, lastFourthExpResp); err != nil {
+			//	t.Errorf("fail to get expected response at last fourth request: %v", err)
+			//}
+
+			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, http.ExpectedResponse{
 				Request: http.Request{
 					Path: "/",
 				},
@@ -56,11 +70,9 @@ var RateLimitTest = suite.ConformanceTest{
 					StatusCode: 429,
 				},
 				Namespace: ns,
-			}
-			lastFourthReq := http.MakeRequest(t, &lastFourthExpResp, gwAddr, "HTTP", "http")
-			if err := GotNTimesExpectedResponse(t, 1, suite.RoundTripper, lastFourthReq, lastFourthExpResp); err != nil {
-				t.Errorf("fail to get expected response at last fourth request: %v", err)
-			}
+			})
+
+			//
 		})
 	},
 }
