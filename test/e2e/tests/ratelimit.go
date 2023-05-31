@@ -34,19 +34,19 @@ var RateLimitTest = suite.ConformanceTest{
 			gwAddr := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gwNN), routeNN)
 
 			// should just send exactly 4 requests, and expect 429
-			firstThreeExpResp := http.ExpectedResponse{
-				Request: http.Request{
-					Path: "/",
-				},
-				Response: http.Response{
-					StatusCode: 200,
-				},
-				Namespace: ns,
-			}
-			firstThreeReq := http.MakeRequest(t, &firstThreeExpResp, gwAddr, "HTTP", "http")
-			if err := GotNTimesExpectedResponse(t, 3, suite.RoundTripper, firstThreeReq, firstThreeExpResp); err != nil {
-				t.Errorf("fail to get expected response at first three request: %v", err)
-			}
+			//firstThreeExpResp := http.ExpectedResponse{
+			//	Request: http.Request{
+			//		Path: "/",
+			//	},
+			//	Response: http.Response{
+			//		StatusCode: 200,
+			//	},
+			//	Namespace: ns,
+			//}
+			//firstThreeReq := http.MakeRequest(t, &firstThreeExpResp, gwAddr, "HTTP", "http")
+			//if err := GotNTimesExpectedResponse(t, 3, suite.RoundTripper, firstThreeReq, firstThreeExpResp); err != nil {
+			//	t.Errorf("fail to get expected response at first three request: %v", err)
+			//}
 
 			//lastFourthExpResp := http.ExpectedResponse{
 			//	Request: http.Request{

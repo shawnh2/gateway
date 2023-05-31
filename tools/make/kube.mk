@@ -105,6 +105,7 @@ install-ratelimit:
 	kubectl rollout status --watch --timeout=5m -n envoy-gateway-system deployment/envoy-gateway
 	kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-gateway --for=condition=Available
 	kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-ratelimit --for=condition=Available
+	kubectl get all -A -o wide
 
 .PHONY: run-e2e
 run-e2e:
