@@ -55,21 +55,21 @@ jobs:
 #        name: codecov-envoy-gateway
 #        verbose: true
 
-#  build:
-#    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 #    needs: [lint, gen-check, license-check, coverage-test]
-#    steps:
-#    - uses: actions/checkout@v3
-#    - uses: ./tools/github-actions/setup-deps
-#
-#    - name: Build EG Multiarch Binaries
-#      run: make build-multiarch PLATFORMS="linux_amd64 linux_arm64"
-#
-#    - name: Upload EG Binaries
-#      uses: actions/upload-artifact@v3
-#      with:
-#        name: envoy-gateway
-#        path: bin/
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ./tools/github-actions/setup-deps
+
+    - name: Build EG Multiarch Binaries
+      run: make build-multiarch PLATFORMS="linux_amd64 linux_arm64"
+
+    - name: Upload EG Binaries
+      uses: actions/upload-artifact@v3
+      with:
+        name: envoy-gateway
+        path: bin/
 
 #  conformance-test:
 #    runs-on: ubuntu-latest
@@ -127,47 +127,47 @@ jobs:
         IMAGE_PULL_POLICY: IfNotPresent
       run: make e2e
 
-  publish:
-    runs-on: ubuntu-latest
-    needs: [conformance-test]
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ./tools/github-actions/setup-deps
-
-    - name: Download EG Binaries
-      uses: actions/download-artifact@v3
-      with:
-        name: envoy-gateway
-        path: bin/
-
-    - name: Give Privileges To EG Binaries
-      run: |
-        chmod +x bin/linux/amd64/envoy-gateway
-        chmod +x bin/linux/arm64/envoy-gateway
-
-    # build and push image
-    - name: Login to DockerHub
-      if: github.event_name == 'push'
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-    - name: Setup Multiarch Environment
-      if: github.event_name == 'push'
-      run: make image.multiarch.setup
-
-    - name: Build and Push EG Commit Image
-      if: github.event_name == 'push'
-      # tag is set to the short SHA of the commit
-      run: make image.push.multiarch PLATFORMS="linux_amd64 linux_arm64" IMAGE=envoyproxy/gateway-dev
-
-    - name: Build and Push EG Latest Image
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      # tag is set to `latest` when pushing to main branch
-      run: make image.push.multiarch TAG=latest PLATFORMS="linux_amd64 linux_arm64" IMAGE=envoyproxy/gateway-dev
-
-    - name: Build and Push EG Latest Helm Chart
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      # use `0.0.0` as the default latest version.
-      run: OCI_REGISTRY=oci://docker.io/envoyproxy CHART_VERSION=v0.0.0-latest TAG=latest make helm-package helm-push
+#  publish:
+#    runs-on: ubuntu-latest
+#    needs: [conformance-test]
+#    steps:
+#    - uses: actions/checkout@v3
+#    - uses: ./tools/github-actions/setup-deps
+#
+#    - name: Download EG Binaries
+#      uses: actions/download-artifact@v3
+#      with:
+#        name: envoy-gateway
+#        path: bin/
+#
+#    - name: Give Privileges To EG Binaries
+#      run: |
+#        chmod +x bin/linux/amd64/envoy-gateway
+#        chmod +x bin/linux/arm64/envoy-gateway
+#
+#    # build and push image
+#    - name: Login to DockerHub
+#      if: github.event_name == 'push'
+#      uses: docker/login-action@v2
+#      with:
+#        username: ${{ secrets.DOCKERHUB_USERNAME }}
+#        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+#
+#    - name: Setup Multiarch Environment
+#      if: github.event_name == 'push'
+#      run: make image.multiarch.setup
+#
+#    - name: Build and Push EG Commit Image
+#      if: github.event_name == 'push'
+#      # tag is set to the short SHA of the commit
+#      run: make image.push.multiarch PLATFORMS="linux_amd64 linux_arm64" IMAGE=envoyproxy/gateway-dev
+#
+#    - name: Build and Push EG Latest Image
+#      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+#      # tag is set to `latest` when pushing to main branch
+#      run: make image.push.multiarch TAG=latest PLATFORMS="linux_amd64 linux_arm64" IMAGE=envoyproxy/gateway-dev
+#
+#    - name: Build and Push EG Latest Helm Chart
+#      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+#      # use `0.0.0` as the default latest version.
+#      run: OCI_REGISTRY=oci://docker.io/envoyproxy CHART_VERSION=v0.0.0-latest TAG=latest make helm-package helm-push
