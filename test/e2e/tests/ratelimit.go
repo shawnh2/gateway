@@ -34,30 +34,30 @@ var RateLimitTest = suite.ConformanceTest{
 			gwAddr := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gwNN), routeNN)
 
 			// should just send exactly 4 requests, and expect 429
-			//firstThreeExpResp := http.ExpectedResponse{
-			//	Request: http.Request{
-			//		Path: "/",
-			//	},
-			//	Response: http.Response{
-			//		StatusCode: 200,
-			//	},
-			//	Namespace: ns,
-			//}
-			//firstThreeReq := http.MakeRequest(t, &firstThreeExpResp, gwAddr, "HTTP", "http")
+			firstThreeExpResp := http.ExpectedResponse{
+				Request: http.Request{
+					Path: "/",
+				},
+				Response: http.Response{
+					StatusCode: 200,
+				},
+				Namespace: ns,
+			}
+			firstThreeReq := http.MakeRequest(t, &firstThreeExpResp, gwAddr, "HTTP", "http")
 			//if err := GotNTimesExpectedResponse(t, 3, suite.RoundTripper, firstThreeReq, firstThreeExpResp); err != nil {
 			//	t.Errorf("fail to get expected response at first three request: %v", err)
 			//}
 
-			//lastFourthExpResp := http.ExpectedResponse{
-			//	Request: http.Request{
-			//		Path: "/",
-			//	},
-			//	Response: http.Response{
-			//		StatusCode: 429,
-			//	},
-			//	Namespace: ns,
-			//}
-			//lastFourthReq := http.MakeRequest(t, &lastFourthExpResp, gwAddr, "HTTP", "http")
+			lastFourthExpResp := http.ExpectedResponse{
+				Request: http.Request{
+					Path: "/",
+				},
+				Response: http.Response{
+					StatusCode: 429,
+				},
+				Namespace: ns,
+			}
+			lastFourthReq := http.MakeRequest(t, &lastFourthExpResp, gwAddr, "HTTP", "http")
 			//if err := GotNTimesExpectedResponse(t, 1, suite.RoundTripper, lastFourthReq, lastFourthExpResp); err != nil {
 			//	t.Errorf("fail to get expected response at last fourth request: %v", err)
 			//}
@@ -67,12 +67,20 @@ var RateLimitTest = suite.ConformanceTest{
 					Path: "/",
 				},
 				Response: http.Response{
-					StatusCode: 429,
+					StatusCode: 200,
 				},
 				Namespace: ns,
 			})
 
 			//
+
+			if err := GotNTimesExpectedResponse(t, 2, suite.RoundTripper, firstThreeReq, firstThreeExpResp); err != nil {
+				t.Errorf("fail to get expected response at first three request: %v", err)
+			}
+
+			if err := GotNTimesExpectedResponse(t, 1, suite.RoundTripper, lastFourthReq, lastFourthExpResp); err != nil {
+				t.Errorf("fail to get expected response at last fourth request: %v", err)
+			}
 		})
 	},
 }
