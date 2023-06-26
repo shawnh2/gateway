@@ -342,6 +342,9 @@ func (t *Translator) processRedirectFilter(
 	if redirect.Port != nil {
 		redirectPort := uint32(*redirect.Port)
 		redir.Port = &redirectPort
+	} else {
+		redirectPort := uint32(*filterContext.ParentRef.Port)
+		redir.Port = &redirectPort
 	}
 
 	filterContext.RedirectResponse = redir
