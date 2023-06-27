@@ -339,20 +339,9 @@ func (t *Translator) processRedirectFilter(
 		}
 	}
 
-	var redirectPort uint32
 	if redirect.Port != nil {
-		redirectPort = uint32(*redirect.Port)
+		redirectPort := uint32(*redirect.Port)
 		redir.Port = &redirectPort
-	} else {
-		if redirect.Scheme != nil {
-			switch *redirect.Scheme {
-			case "http":
-				redirectPort = 80
-			case "https":
-				redirectPort = 443
-			}
-			redir.Port = &redirectPort
-		}
 	}
 
 	filterContext.RedirectResponse = redir
