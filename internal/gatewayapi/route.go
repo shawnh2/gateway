@@ -520,10 +520,11 @@ func (t *Translator) processHTTPRouteParentRefListener(route RouteContext, route
 						default:
 							redirectPort = uint32(listener.Port)
 						}
-					} else {
-						redirectPort = uint32(listener.Port)
-					}
-					routeRoute.Redirect.Port = &redirectPort
+						routeRoute.Redirect.Port = &redirectPort
+					} // else {
+					//redirectPort = uint32(listener.Port)
+					//}
+					//routeRoute.Redirect.Port = &redirectPort
 				}
 
 				hostRoute := &ir.HTTPRoute{
