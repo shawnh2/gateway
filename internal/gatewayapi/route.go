@@ -511,18 +511,14 @@ func (t *Translator) processHTTPRouteParentRefListener(route RouteContext, route
 			for _, routeRoute := range routeRoutes {
 				//
 				if routeRoute.Redirect != nil && routeRoute.Redirect.Port == nil {
-					var redirectPort uint32
+					redirectPort := uint32(listener.Port)
 					if scheme := routeRoute.Redirect.Scheme; scheme != nil {
 						switch *scheme {
 						case "http":
 							redirectPort = 80
 						case "https":
 							redirectPort = 443
-						default:
-							redirectPort = uint32(listener.Port)
 						}
-					} else {
-						redirectPort = uint32(listener.Port)
 					}
 					routeRoute.Redirect.Port = &redirectPort
 				}

@@ -52,7 +52,7 @@ func TestGatewayAPIConformance(t *testing.T) {
 
 	// --- FAIL: TestGatewayAPIConformance/HTTPRouteRedirectPortAndScheme (1.11s)
 	//    --- PASS: HTTPRouteRedirectPortAndScheme/http-listener-on-80/0_request_to_'/scheme-nil-and-port-nil'_should_receive_a_302 (0.01s)
-	//    --- FAIL: HTTPRouteRedirectPortAndScheme/http-listener-on-8080/0_request_to_'/scheme-nil-and-port-nil'_should_receive_a_302 (30.00s)
+	//    --- PASS: HTTPRouteRedirectPortAndScheme/http-listener-on-8080/0_request_to_'/scheme-nil-and-port-nil'_should_receive_a_302 (30.00s)
 	//    --- FAIL: HTTPRouteRedirectPortAndScheme/https-listener-on-443/5_request_to_'example.org/scheme-http-and-port-8080'_should_receive_a_302 (31.51s)
 	//    --- FAIL: HTTPRouteRedirectPortAndScheme/https-listener-on-443/4_request_to_'example.org/scheme-http-and-port-80'_should_receive_a_302 (30.00s)
 	//    --- FAIL: HTTPRouteRedirectPortAndScheme/https-listener-on-443/3_request_to_'example.org/scheme-http-and-port-nil'_should_receive_a_302 (30.72s)
