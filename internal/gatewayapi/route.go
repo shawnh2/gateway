@@ -509,7 +509,8 @@ func (t *Translator) processHTTPRouteParentRefListener(route RouteContext, route
 			}
 
 			for _, routeRoute := range routeRoutes {
-				if routeRoute.Redirect.Port == nil {
+				//
+				if routeRoute.Redirect != nil && routeRoute.Redirect.Port == nil {
 					var redirectPort uint32
 					if scheme := routeRoute.Redirect.Scheme; scheme != nil {
 						switch *scheme {
@@ -520,11 +521,10 @@ func (t *Translator) processHTTPRouteParentRefListener(route RouteContext, route
 						default:
 							redirectPort = uint32(listener.Port)
 						}
-						routeRoute.Redirect.Port = &redirectPort
-					} // else {
-					//redirectPort = uint32(listener.Port)
-					//}
-					//routeRoute.Redirect.Port = &redirectPort
+					} else {
+						redirectPort = uint32(listener.Port)
+					}
+					routeRoute.Redirect.Port = &redirectPort
 				}
 
 				hostRoute := &ir.HTTPRoute{
