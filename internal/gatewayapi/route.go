@@ -7,6 +7,7 @@ package gatewayapi
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -521,6 +522,7 @@ func (t *Translator) processHTTPRouteParentRefListener(route RouteContext, route
 						}
 					}
 					routeRoute.Redirect.Port = &redirectPort
+					logrus.Infof("[@@@] set redirect port to %d", redirectPort)
 				}
 
 				hostRoute := &ir.HTTPRoute{
