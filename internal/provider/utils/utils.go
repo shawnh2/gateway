@@ -26,14 +26,14 @@ func NamespacedName(obj client.Object) types.NamespacedName {
 func GetHashedName(nsName string) string {
 
 	h := sha256.New() // Using sha256 instead of sha1 due to Blocklisted import crypto/sha1: weak cryptographic primitive (gosec)
-	hSum := h.Sum([]byte(nsName))
-	hashedName := strings.ToLower(fmt.Sprintf("%x", hSum))
+	h.Write([]byte(nsName))
+	hashedName := strings.ToLower(fmt.Sprintf("%x", h.Sum(nil)))
 
 	// replace `/` with `-` to create a valid K8s resource name
 	resourceName := strings.ReplaceAll(nsName, "/", "-")
 
-	if len(resourceName) > 64 {
-		return fmt.Sprintf("%s-%s", resourceName[0:64], hashedName[0:8])
+	if len(resourceName) > 48 {
+		return fmt.Sprintf("%s-%s", resourceName[0:48], hashedName[0:8])
 	}
 	return fmt.Sprintf("%s-%s", resourceName, hashedName[0:8])
 }
