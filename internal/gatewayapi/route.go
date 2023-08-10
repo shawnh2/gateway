@@ -509,12 +509,11 @@ func (t *Translator) processHTTPRouteParentRefListener(route RouteContext, route
 				}
 			}
 
-			for _, routeRoute := range routeRoutes {
-				//
+			for i, routeRoute := range routeRoutes {
 				if routeRoute.Redirect != nil && routeRoute.Redirect.Port == nil {
 					redirectPort := uint32(listener.Port)
 					if scheme := routeRoute.Redirect.Scheme; scheme != nil {
-						switch *scheme {
+						switch strings.ToLower(*scheme) {
 						case "http":
 							redirectPort = 80
 						case "https":
@@ -522,7 +521,7 @@ func (t *Translator) processHTTPRouteParentRefListener(route RouteContext, route
 						}
 					}
 					routeRoute.Redirect.Port = &redirectPort
-					logrus.Infof("[@@@] set redirect port to %d", redirectPort)
+					logrus.Infof("[@@@] set %d redirect port to %d", i, redirectPort)
 				}
 
 				hostRoute := &ir.HTTPRoute{
