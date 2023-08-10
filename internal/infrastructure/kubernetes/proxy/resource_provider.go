@@ -7,6 +7,7 @@ package proxy
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"strconv"
 
 	"golang.org/x/exp/maps"
@@ -101,6 +102,8 @@ func (r *ResourceRender) Service() (*corev1.Service, error) {
 	serviceSpec.Ports = ports
 	serviceSpec.Selector = resource.GetSelector(labels).MatchLabels
 	serviceSpec.ExternalIPs = r.infra.Addresses
+
+	logrus.Infof("[@@@] we have infra name: %s, final name: %s", r.infra.Name, ExpectedResourceHashedName(r.infra.Name))
 
 	svc := &corev1.Service{
 		TypeMeta: metav1.TypeMeta{

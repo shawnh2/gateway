@@ -6,6 +6,7 @@
 package status
 
 import (
+	"github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
@@ -26,6 +27,9 @@ func UpdateGatewayStatusProgrammedCondition(gw *gwapiv1b1.Gateway, svc *corev1.S
 	var addresses, hostnames []string
 	// Update the status addresses field.
 	if svc != nil {
+
+		logrus.Infof("[@@@] in svc")
+
 		// If the addresses is explicitly set in the Gateway spec by the user, use it
 		// to populate the Status
 		if len(gw.Spec.Addresses) > 0 {
@@ -35,7 +39,13 @@ func UpdateGatewayStatusProgrammedCondition(gw *gwapiv1b1.Gateway, svc *corev1.S
 				addresses = append(addresses, svc.Spec.ExternalIPs...)
 			}
 		} else {
+
+			logrus.Infof("[@@@] svc type : %s", svc.Spec.Type)
+
 			if svc.Spec.Type == corev1.ServiceTypeLoadBalancer {
+
+				logrus.Infof("[@@@] has %d ingress ip: %v", len(svc.Status.LoadBalancer.Ingress), svc.Status.LoadBalancer.Ingress)
+
 				for i := range svc.Status.LoadBalancer.Ingress {
 					switch {
 					case len(svc.Status.LoadBalancer.Ingress[i].IP) > 0:
@@ -64,6 +74,8 @@ func UpdateGatewayStatusProgrammedCondition(gw *gwapiv1b1.Gateway, svc *corev1.S
 			}
 		}
 
+		logrus.Infof("[@@@] got %d ip addr: %v", len(addresses), addresses)
+
 		var gwAddresses []gwapiv1b1.GatewayStatusAddress
 		for i := range addresses {
 			addr := gwapiv1b1.GatewayStatusAddress{
@@ -83,6 +95,9 @@ func UpdateGatewayStatusProgrammedCondition(gw *gwapiv1b1.Gateway, svc *corev1.S
 
 		gw.Status.Addresses = gwAddresses
 	} else {
+
+		logrus.Infof("[@@@] staright to nil")
+
 		gw.Status.Addresses = nil
 	}
 	// Update the programmed condition.

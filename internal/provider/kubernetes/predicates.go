@@ -7,6 +7,7 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -271,6 +272,9 @@ func (r *gatewayAPIReconciler) envoyDeploymentForGateway(ctx context.Context, ga
 		Namespace: r.namespace,
 		Name:      infraDeploymentName(gateway),
 	}
+
+	r.log.Info(fmt.Sprintf("[@@@] deploy key got: %v", key))
+
 	deployment := new(appsv1.Deployment)
 	if err := r.client.Get(ctx, key, deployment); err != nil {
 		if kerrors.IsNotFound(err) {
@@ -287,6 +291,11 @@ func (r *gatewayAPIReconciler) envoyServiceForGateway(ctx context.Context, gatew
 		Namespace: r.namespace,
 		Name:      infraServiceName(gateway),
 	}
+
+	r.log.Info(fmt.Sprintf("[@@@] 1- %s-%s", gateway.Namespace, gateway.Name))
+	r.log.Info(fmt.Sprintf("[@@@] 2- %s", utils.GetHashedName(fmt.Sprintf("%s-%s", gateway.Namespace, gateway.Name))))
+	r.log.Info(fmt.Sprintf("[@@@] svc key got: %v", key))
+
 	svc := new(corev1.Service)
 	if err := r.client.Get(ctx, key, svc); err != nil {
 		if kerrors.IsNotFound(err) {
