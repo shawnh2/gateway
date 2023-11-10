@@ -1,0 +1,115 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy-merge-gateways
+spec:
+  controllerName: gateway.envoyproxy.io/gc-merge-gws-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: merge-gateways-proxy-config
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: merge-gateways-proxy-config
+  namespace: envoy-gateway-system
+spec:
+  mergeGateways: true
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: merged-gateway-1
+  namespace: gateway-conformance-infra
+spec:
+  gatewayClassName: envoy-merge-gateways
+  listeners:
+    - allowedRoutes:
+        namespaces:
+          from: Same
+      name: http
+      port: 8080
+      protocol: HTTP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: merged-gateway-2
+  namespace: gateway-conformance-infra
+spec:
+  gatewayClassName: envoy-merge-gateways
+  listeners:
+    - allowedRoutes:
+        namespaces:
+          from: Same
+      name: http
+      port: 8081
+      protocol: HTTP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: merged-gateway-3
+  namespace: default
+spec:
+  gatewayClassName: envoy-merge-gateways
+  listeners:
+    - allowedRoutes:
+        namespaces:
+          from: All
+      name: http
+      port: 8082
+      protocol: HTTP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: merged-gateway-route-1
+  namespace: gateway-conformance-infra
+spec:
+  parentRefs:
+    - name: merged-gateway-1
+  rules:
+    - backendRefs:
+        - name: infra-backend-v1
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /merge1
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: merged-gateway-route-2
+  namespace: gateway-conformance-infra
+spec:
+  parentRefs:
+    - name: merged-gateway-2
+  rules:
+    - backendRefs:
+        - name: infra-backend-v2
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /merge2
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: merged-gateway-route-3
+  namespace: gateway-conformance-infra
+spec:
+  parentRefs:
+    - name: merged-gateway-3
+  rules:
+    - backendRefs:
+        - name: infra-backend-v3
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /merge3

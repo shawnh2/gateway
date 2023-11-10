@@ -23,7 +23,7 @@ func init() {
 
 var EnvoyPatchPolicyTest = suite.ConformanceTest{
 	ShortName:   "EnvoyPatchPolicy",
-	Description: "update xds using EnvoyPatchPolicy",
+	Description: "Update xds using EnvoyPatchPolicy",
 	Manifests:   []string{"testdata/envoy-patch-policy.yaml"},
 	Test: func(t *testing.T, suite *suite.ConformanceTestSuite) {
 		t.Run("envoy patch policy", func(t *testing.T) {
