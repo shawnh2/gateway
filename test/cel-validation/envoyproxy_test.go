@@ -11,6 +11,7 @@ package celvalidation
 import (
 	"context"
 	"fmt"
+	"k8s.io/utils/pointer"
 	"strings"
 	"testing"
 	"time"
@@ -216,15 +217,17 @@ func TestEnvoyProxyProvider(t *testing.T) {
 			wantErrors: []string{},
 		},
 		{
-			desc: "ProxyAccessLog-with-empty-LogFormatTypeText",
+			desc: "ProxyMetricSink-with-MetricSinkTypeOpenTelemetry",
 			mutate: func(envoy *egv1a1.EnvoyProxy) {
 				envoy.Spec = egv1a1.EnvoyProxySpec{
 					Telemetry: &egv1a1.ProxyTelemetry{
-						AccessLog: &egv1a1.ProxyAccessLog{
-							Settings: []egv1a1.ProxyAccessLogSetting{
+						Metrics: &egv1a1.ProxyMetrics{
+							Sinks: []egv1a1.ProxyMetricSink{
 								{
-									Format: egv1a1.ProxyAccessLogFormat{
-										Type: egv1a1.ProxyAccessLogFormatTypeText,
+									Type: egv1a1.MetricSinkTypeOpenTelemetry,
+									OpenTelemetry: &egv1a1.ProxyOpenTelemetrySink{
+										Host: "0.0.0.0",
+										Port: 3217,
 									},
 								},
 							},
@@ -235,7 +238,7 @@ func TestEnvoyProxyProvider(t *testing.T) {
 			wantErrors: []string{},
 		},
 		{
-			desc: "ProxyAccessLog-with-empty-LogFormatTypeJSON",
+			desc: "sink-fail",
 			mutate: func(envoy *egv1a1.EnvoyProxy) {
 				envoy.Spec = egv1a1.EnvoyProxySpec{
 					Telemetry: &egv1a1.ProxyTelemetry{
@@ -243,7 +246,13 @@ func TestEnvoyProxyProvider(t *testing.T) {
 							Settings: []egv1a1.ProxyAccessLogSetting{
 								{
 									Format: egv1a1.ProxyAccessLogFormat{
-										Type: egv1a1.ProxyAccessLogFormatTypeJSON,
+										Type: egv1a1.ProxyAccessLogFormatTypeText,
+										Text: pointer.String("[%START_TIME%]"),
+									},
+									Sinks: []egv1a1.ProxyAccessLogSink{
+										{
+											Type: egv1a1.ProxyAccessLogSinkTypeOpenTelemetry,
+										},
 									},
 								},
 							},
