@@ -40,14 +40,13 @@ var MergeGatewaysTest = suite.ConformanceTest{
 		gw3NN := types.NamespacedName{Name: "merged-gateway-3", Namespace: ns}
 		gw3Addr := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw3NN), route3NN)
 
-		if gw1Addr != gw2Addr {
-			t.Errorf("fail to merge gateways: inconsistent gateway address %s and %s", gw1Addr, gw2Addr)
-		}
-		if gw2Addr != gw3Addr {
-			t.Errorf("fail to merge gateways: inconsistent gateway address %s and %s", gw2Addr, gw3Addr)
-		}
-
 		t.Run("merged three gateways under the same namespace with http routes", func(t *testing.T) {
+			if gw1Addr != gw2Addr {
+				t.Errorf("fail to merge gateways: inconsistent gateway address %s and %s", gw1Addr, gw2Addr)
+			}
+			if gw2Addr != gw3Addr {
+				t.Errorf("fail to merge gateways: inconsistent gateway address %s and %s", gw2Addr, gw3Addr)
+			}
 			// Three gateways have the same address.
 			gwAddr := gw1Addr
 

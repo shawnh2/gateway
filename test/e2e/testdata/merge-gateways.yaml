@@ -3,7 +3,7 @@ kind: GatewayClass
 metadata:
   name: envoy-merge-gateways
 spec:
-  controllerName: gateway.envoyproxy.io/gc-merge-gws-controller
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
   parametersRef:
     group: gateway.envoyproxy.io
     kind: EnvoyProxy
