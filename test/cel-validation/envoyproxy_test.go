@@ -204,12 +204,54 @@ func TestEnvoyProxyProvider(t *testing.T) {
 			wantErrors: []string{"loadBalancerIP can only be set for LoadBalancer type"},
 		},
 		{
-			desc: "ProxyAccessLog-disable",
+			desc: "invalid-ProxyAccessLogFormat",
 			mutate: func(envoy *egv1a1.EnvoyProxy) {
 				envoy.Spec = egv1a1.EnvoyProxySpec{
 					Telemetry: &egv1a1.ProxyTelemetry{
 						AccessLog: &egv1a1.ProxyAccessLog{
-							Disable: true,
+							Settings: []egv1a1.ProxyAccessLogSetting{
+								{
+									Format: egv1a1.ProxyAccessLogFormat{
+										Type: "foo",
+									},
+									//Sinks: []egv1a1.ProxyAccessLogSink{
+									//	{
+									//		Type: egv1a1.ProxyAccessLogSinkTypeFile,
+									//		File: &egv1a1.FileEnvoyProxyAccessLog{
+									//			Path: "foo/bar",
+									//		},
+									//	},
+									//},
+								},
+							},
+						},
+					},
+				}
+			},
+			wantErrors: []string{},
+		},
+		{
+			desc: "ProxyAccessLogFormat-with-no-Text",
+			mutate: func(envoy *egv1a1.EnvoyProxy) {
+				envoy.Spec = egv1a1.EnvoyProxySpec{
+					Telemetry: &egv1a1.ProxyTelemetry{
+						AccessLog: &egv1a1.ProxyAccessLog{
+							Settings: []egv1a1.ProxyAccessLogSetting{
+								{
+									Format: egv1a1.ProxyAccessLogFormat{
+										Type: egv1a1.ProxyAccessLogFormatTypeText,
+										// no text
+									},
+									Sinks: []egv1a1.ProxyAccessLogSink{
+										{
+											Type: egv1a1.ProxyAccessLogSinkTypeFile,
+											File: &egv1a1.FileEnvoyProxyAccessLog{
+												Path: "foo/bar",
+											},
+										},
+									},
+								},
+							},
 						},
 					},
 				}
