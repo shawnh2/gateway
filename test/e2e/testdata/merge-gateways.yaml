@@ -52,13 +52,13 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: merged-gateway-3
-  namespace: default
+  namespace: gateway-conformance-infra
 spec:
   gatewayClassName: envoy-merge-gateways
   listeners:
     - allowedRoutes:
         namespaces:
-          from: All
+          from: Same
       name: http
       port: 8082
       protocol: HTTP
