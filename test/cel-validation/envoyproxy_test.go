@@ -232,14 +232,14 @@ func TestEnvoyProxyProvider(t *testing.T) {
 									Format: egv1a1.ProxyAccessLogFormat{
 										Type: egv1a1.ProxyAccessLogFormatTypeText,
 									},
-									//Sinks: []egv1a1.ProxyAccessLogSink{
-									//	{
-									//		Type: egv1a1.ProxyAccessLogSinkTypeFile,
-									//		File: &egv1a1.FileEnvoyProxyAccessLog{
-									//			Path: "foo/bar",
-									//		},
-									//	},
-									//},
+									Sinks: []egv1a1.ProxyAccessLogSink{
+										{
+											Type: egv1a1.ProxyAccessLogSinkTypeFile,
+											File: &egv1a1.FileEnvoyProxyAccessLog{
+												Path: "foo/bar",
+											},
+										},
+									},
 								},
 							},
 						},
