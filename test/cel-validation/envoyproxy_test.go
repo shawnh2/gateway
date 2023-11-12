@@ -304,7 +304,57 @@ func TestEnvoyProxyProvider(t *testing.T) {
 			wantErrors: []string{"If AccessLogFormat type is JSON, json field needs to be set"},
 		},
 		{
-			desc: "ProxyAccessLogFormat-with-TypeText-and-text",
+			desc: "ProxyAccessLogSink-with-TypeFile-but-no-file",
+			mutate: func(envoy *egv1a1.EnvoyProxy) {
+				envoy.Spec = egv1a1.EnvoyProxySpec{
+					Telemetry: &egv1a1.ProxyTelemetry{
+						AccessLog: &egv1a1.ProxyAccessLog{
+							Settings: []egv1a1.ProxyAccessLogSetting{
+								{
+									Format: egv1a1.ProxyAccessLogFormat{
+										Type: egv1a1.ProxyAccessLogFormatTypeText,
+										Text: ptr.To("[%START_TIME%]"),
+									},
+									Sinks: []egv1a1.ProxyAccessLogSink{
+										{
+											Type: egv1a1.ProxyAccessLogSinkTypeFile,
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			},
+			wantErrors: []string{"If AccessLogSink type is File, file field needs to be set"},
+		},
+		{
+			desc: "ProxyAccessLogSink-with-TypeOpenTelemetry-but-no-openTelemetry",
+			mutate: func(envoy *egv1a1.EnvoyProxy) {
+				envoy.Spec = egv1a1.EnvoyProxySpec{
+					Telemetry: &egv1a1.ProxyTelemetry{
+						AccessLog: &egv1a1.ProxyAccessLog{
+							Settings: []egv1a1.ProxyAccessLogSetting{
+								{
+									Format: egv1a1.ProxyAccessLogFormat{
+										Type: egv1a1.ProxyAccessLogFormatTypeText,
+										Text: ptr.To("[%START_TIME%]"),
+									},
+									Sinks: []egv1a1.ProxyAccessLogSink{
+										{
+											Type: egv1a1.ProxyAccessLogSinkTypeOpenTelemetry,
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			},
+			wantErrors: []string{"If AccessLogSink type is OpenTelemetry, openTelemetry field needs to be set"},
+		},
+		{
+			desc: "ProxyAccessLog-settings-pass",
 			mutate: func(envoy *egv1a1.EnvoyProxy) {
 				envoy.Spec = egv1a1.EnvoyProxySpec{
 					Telemetry: &egv1a1.ProxyTelemetry{
@@ -331,52 +381,44 @@ func TestEnvoyProxyProvider(t *testing.T) {
 			},
 			wantErrors: []string{},
 		},
-		//{
-		//	desc: "ProxyMetricSink-with-MetricSinkTypeOpenTelemetry",
-		//	mutate: func(envoy *egv1a1.EnvoyProxy) {
-		//		envoy.Spec = egv1a1.EnvoyProxySpec{
-		//			Telemetry: &egv1a1.ProxyTelemetry{
-		//				Metrics: &egv1a1.ProxyMetrics{
-		//					Sinks: []egv1a1.ProxyMetricSink{
-		//						{
-		//							Type: egv1a1.MetricSinkTypeOpenTelemetry,
-		//							OpenTelemetry: &egv1a1.ProxyOpenTelemetrySink{
-		//								Host: "0.0.0.0",
-		//								Port: 3217,
-		//							},
-		//						},
-		//					},
-		//				},
-		//			},
-		//		}
-		//	},
-		//	wantErrors: []string{},
-		//},
-		//{
-		//	desc: "sink-fail",
-		//	mutate: func(envoy *egv1a1.EnvoyProxy) {
-		//		envoy.Spec = egv1a1.EnvoyProxySpec{
-		//			Telemetry: &egv1a1.ProxyTelemetry{
-		//				AccessLog: &egv1a1.ProxyAccessLog{
-		//					Settings: []egv1a1.ProxyAccessLogSetting{
-		//						{
-		//							Format: egv1a1.ProxyAccessLogFormat{
-		//								Type: egv1a1.ProxyAccessLogFormatTypeText,
-		//								Text: pointer.String("[%START_TIME%]"),
-		//							},
-		//							Sinks: []egv1a1.ProxyAccessLogSink{
-		//								{
-		//									Type: egv1a1.ProxyAccessLogSinkTypeOpenTelemetry,
-		//								},
-		//							},
-		//						},
-		//					},
-		//				},
-		//			},
-		//		}
-		//	},
-		//	wantErrors: []string{},
-		//},
+		{
+			desc: "ProxyMetricSink-with-TypeOpenTelemetry-but-no-openTelemetry",
+			mutate: func(envoy *egv1a1.EnvoyProxy) {
+				envoy.Spec = egv1a1.EnvoyProxySpec{
+					Telemetry: &egv1a1.ProxyTelemetry{
+						Metrics: &egv1a1.ProxyMetrics{
+							Sinks: []egv1a1.ProxyMetricSink{
+								{
+									Type: egv1a1.MetricSinkTypeOpenTelemetry,
+								},
+							},
+						},
+					},
+				}
+			},
+			wantErrors: []string{"If MetricSink type is OpenTelemetry, openTelemetry field needs to be set"},
+		},
+		{
+			desc: "ProxyMetrics-sinks-pass",
+			mutate: func(envoy *egv1a1.EnvoyProxy) {
+				envoy.Spec = egv1a1.EnvoyProxySpec{
+					Telemetry: &egv1a1.ProxyTelemetry{
+						Metrics: &egv1a1.ProxyMetrics{
+							Sinks: []egv1a1.ProxyMetricSink{
+								{
+									Type: egv1a1.MetricSinkTypeOpenTelemetry,
+									OpenTelemetry: &egv1a1.ProxyOpenTelemetrySink{
+										Host: "0.0.0.0",
+										Port: 3217,
+									},
+								},
+							},
+						},
+					},
+				}
+			},
+			wantErrors: []string{},
+		},
 	}
 
 	for _, tc := range cases {

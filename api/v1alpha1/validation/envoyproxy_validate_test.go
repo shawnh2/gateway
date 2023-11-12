@@ -464,7 +464,8 @@ func TestValidateEnvoyProxy(t *testing.T) {
 				},
 			},
 			expected: false,
-		}, {
+		},
+		{
 			name: "should invalid when metrics type is OpenTelemetry, but `OpenTelemetry` field being empty",
 			proxy: &egv1a1.EnvoyProxy{
 				ObjectMeta: metav1.ObjectMeta{
@@ -484,7 +485,8 @@ func TestValidateEnvoyProxy(t *testing.T) {
 				},
 			},
 			expected: false,
-		}, {
+		},
+		{
 			name: "should valid when metrics type is OpenTelemetry and `OpenTelemetry` field being not empty",
 			proxy: &egv1a1.EnvoyProxy{
 				ObjectMeta: metav1.ObjectMeta{

@@ -68,9 +68,15 @@ const (
 	ProxyAccessLogSinkTypeOpenTelemetry ProxyAccessLogSinkType = "OpenTelemetry"
 )
 
+// ProxyAccessLogSink defines the sink of accesslog.
+// +union
+//
+// +kubebuilder:validation:XValidation:rule="self.type == 'File' ? has(self.file) : !has(self.file)",message="If AccessLogSink type is File, file field needs to be set."
+// +kubebuilder:validation:XValidation:rule="self.type == 'OpenTelemetry' ? has(self.openTelemetry) : !has(self.openTelemetry)",message="If AccessLogSink type is OpenTelemetry, openTelemetry field needs to be set."
 type ProxyAccessLogSink struct {
 	// Type defines the type of accesslog sink.
 	// +kubebuilder:validation:Enum=File;OpenTelemetry
+	// +unionDiscriminator
 	Type ProxyAccessLogSinkType `json:"type,omitempty"`
 	// File defines the file accesslog sink.
 	// +optional
