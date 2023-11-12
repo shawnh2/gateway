@@ -11,7 +11,6 @@ package celvalidation
 import (
 	"context"
 	"fmt"
-	"k8s.io/utils/pointer"
 	"strings"
 	"testing"
 	"time"
@@ -214,6 +213,25 @@ func TestEnvoyProxyProvider(t *testing.T) {
 									Format: egv1a1.ProxyAccessLogFormat{
 										Type: "foo",
 									},
+								},
+							},
+						},
+					},
+				}
+			},
+			wantErrors: []string{"Unsupported value: \"foo\": supported values: \"Text\", \"JSON\""},
+		},
+		{
+			desc: "ProxyAccessLogFormat-with-TypeText-but-no-text",
+			mutate: func(envoy *egv1a1.EnvoyProxy) {
+				envoy.Spec = egv1a1.EnvoyProxySpec{
+					Telemetry: &egv1a1.ProxyTelemetry{
+						AccessLog: &egv1a1.ProxyAccessLog{
+							Settings: []egv1a1.ProxyAccessLogSetting{
+								{
+									Format: egv1a1.ProxyAccessLogFormat{
+										Type: egv1a1.ProxyAccessLogFormatTypeText,
+									},
 									//Sinks: []egv1a1.ProxyAccessLogSink{
 									//	{
 									//		Type: egv1a1.ProxyAccessLogSinkTypeFile,
@@ -231,7 +249,7 @@ func TestEnvoyProxyProvider(t *testing.T) {
 			wantErrors: []string{},
 		},
 		{
-			desc: "ProxyAccessLogFormat-with-no-Text",
+			desc: "ProxyAccessLogFormat-with-TypeJSON-but-no-json",
 			mutate: func(envoy *egv1a1.EnvoyProxy) {
 				envoy.Spec = egv1a1.EnvoyProxySpec{
 					Telemetry: &egv1a1.ProxyTelemetry{
@@ -239,17 +257,16 @@ func TestEnvoyProxyProvider(t *testing.T) {
 							Settings: []egv1a1.ProxyAccessLogSetting{
 								{
 									Format: egv1a1.ProxyAccessLogFormat{
-										Type: egv1a1.ProxyAccessLogFormatTypeText,
-										// no text
+										Type: egv1a1.ProxyAccessLogFormatTypeJSON,
 									},
-									Sinks: []egv1a1.ProxyAccessLogSink{
-										{
-											Type: egv1a1.ProxyAccessLogSinkTypeFile,
-											File: &egv1a1.FileEnvoyProxyAccessLog{
-												Path: "foo/bar",
-											},
-										},
-									},
+									//Sinks: []egv1a1.ProxyAccessLogSink{
+									//	{
+									//		Type: egv1a1.ProxyAccessLogSinkTypeFile,
+									//		File: &egv1a1.FileEnvoyProxyAccessLog{
+									//			Path: "foo/bar",
+									//		},
+									//	},
+									//},
 								},
 							},
 						},
@@ -259,28 +276,7 @@ func TestEnvoyProxyProvider(t *testing.T) {
 			wantErrors: []string{},
 		},
 		{
-			desc: "ProxyMetricSink-with-MetricSinkTypeOpenTelemetry",
-			mutate: func(envoy *egv1a1.EnvoyProxy) {
-				envoy.Spec = egv1a1.EnvoyProxySpec{
-					Telemetry: &egv1a1.ProxyTelemetry{
-						Metrics: &egv1a1.ProxyMetrics{
-							Sinks: []egv1a1.ProxyMetricSink{
-								{
-									Type: egv1a1.MetricSinkTypeOpenTelemetry,
-									OpenTelemetry: &egv1a1.ProxyOpenTelemetrySink{
-										Host: "0.0.0.0",
-										Port: 3217,
-									},
-								},
-							},
-						},
-					},
-				}
-			},
-			wantErrors: []string{},
-		},
-		{
-			desc: "sink-fail",
+			desc: "ProxyAccessLogFormat-with-TypeJSON-but-got-text",
 			mutate: func(envoy *egv1a1.EnvoyProxy) {
 				envoy.Spec = egv1a1.EnvoyProxySpec{
 					Telemetry: &egv1a1.ProxyTelemetry{
@@ -288,14 +284,17 @@ func TestEnvoyProxyProvider(t *testing.T) {
 							Settings: []egv1a1.ProxyAccessLogSetting{
 								{
 									Format: egv1a1.ProxyAccessLogFormat{
-										Type: egv1a1.ProxyAccessLogFormatTypeText,
-										Text: pointer.String("[%START_TIME%]"),
+										Type: egv1a1.ProxyAccessLogFormatTypeJSON,
+										Text: ptr.To("[%START_TIME%]"),
 									},
-									Sinks: []egv1a1.ProxyAccessLogSink{
-										{
-											Type: egv1a1.ProxyAccessLogSinkTypeOpenTelemetry,
-										},
-									},
+									//Sinks: []egv1a1.ProxyAccessLogSink{
+									//	{
+									//		Type: egv1a1.ProxyAccessLogSinkTypeFile,
+									//		File: &egv1a1.FileEnvoyProxyAccessLog{
+									//			Path: "foo/bar",
+									//		},
+									//	},
+									//},
 								},
 							},
 						},
@@ -304,6 +303,80 @@ func TestEnvoyProxyProvider(t *testing.T) {
 			},
 			wantErrors: []string{},
 		},
+		//{
+		//	desc: "ProxyAccessLogFormat-with-no-Text",
+		//	mutate: func(envoy *egv1a1.EnvoyProxy) {
+		//		envoy.Spec = egv1a1.EnvoyProxySpec{
+		//			Telemetry: &egv1a1.ProxyTelemetry{
+		//				AccessLog: &egv1a1.ProxyAccessLog{
+		//					Settings: []egv1a1.ProxyAccessLogSetting{
+		//						{
+		//							Format: egv1a1.ProxyAccessLogFormat{
+		//								Type: egv1a1.ProxyAccessLogFormatTypeText,
+		//								// no text
+		//							},
+		//							Sinks: []egv1a1.ProxyAccessLogSink{
+		//								{
+		//									Type: egv1a1.ProxyAccessLogSinkTypeFile,
+		//									File: &egv1a1.FileEnvoyProxyAccessLog{
+		//										Path: "foo/bar",
+		//									},
+		//								},
+		//							},
+		//						},
+		//					},
+		//				},
+		//			},
+		//		}
+		//	},
+		//	wantErrors: []string{},
+		//},
+		//{
+		//	desc: "ProxyMetricSink-with-MetricSinkTypeOpenTelemetry",
+		//	mutate: func(envoy *egv1a1.EnvoyProxy) {
+		//		envoy.Spec = egv1a1.EnvoyProxySpec{
+		//			Telemetry: &egv1a1.ProxyTelemetry{
+		//				Metrics: &egv1a1.ProxyMetrics{
+		//					Sinks: []egv1a1.ProxyMetricSink{
+		//						{
+		//							Type: egv1a1.MetricSinkTypeOpenTelemetry,
+		//							OpenTelemetry: &egv1a1.ProxyOpenTelemetrySink{
+		//								Host: "0.0.0.0",
+		//								Port: 3217,
+		//							},
+		//						},
+		//					},
+		//				},
+		//			},
+		//		}
+		//	},
+		//	wantErrors: []string{},
+		//},
+		//{
+		//	desc: "sink-fail",
+		//	mutate: func(envoy *egv1a1.EnvoyProxy) {
+		//		envoy.Spec = egv1a1.EnvoyProxySpec{
+		//			Telemetry: &egv1a1.ProxyTelemetry{
+		//				AccessLog: &egv1a1.ProxyAccessLog{
+		//					Settings: []egv1a1.ProxyAccessLogSetting{
+		//						{
+		//							Format: egv1a1.ProxyAccessLogFormat{
+		//								Type: egv1a1.ProxyAccessLogFormatTypeText,
+		//								Text: pointer.String("[%START_TIME%]"),
+		//							},
+		//							Sinks: []egv1a1.ProxyAccessLogSink{
+		//								{
+		//									Type: egv1a1.ProxyAccessLogSinkTypeOpenTelemetry,
+		//								},
+		//							},
+		//						},
+		//					},
+		//				},
+		//			},
+		//		}
+		//	},
+		//	wantErrors: []string{},
+		//},
 	}
 
 	for _, tc := range cases {

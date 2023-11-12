@@ -35,6 +35,9 @@ const (
 // ProxyAccessLogFormat defines the format of accesslog.
 // By default accesslogs are written to standard output.
 // +union
+//
+// +kubebuilder:validation:XValidation:rule="self.type == 'Text' ? has(self.text) : !has(self.text)", message="If AccessLogFormat type is Text, text field needs to be set."
+// +kubebuilder:validation:XValidation:rule="self.type == 'JSON' ? has(self.json) : !has(self.json)", message="If AccessLogFormat type is JSON, json field needs to be set."
 type ProxyAccessLogFormat struct {
 	// Type defines the type of accesslog format.
 	// +kubebuilder:validation:Enum=Text;JSON

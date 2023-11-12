@@ -5350,6 +5350,13 @@ spec:
                                   - JSON
                                   type: string
                               type: object
+                              x-kubernetes-validations:
+                              - message: If AccessLogFormat type is Text, text field
+                                  needs to be set.
+                                rule: 'self.type == ''Text'' ? has(self.text) : !has(self.text)'
+                              - message: If AccessLogFormat type is JSON, json field
+                                  needs to be set.
+                                rule: 'self.type == ''JSON'' ? has(self.json) : !has(self.json)'
                             sinks:
                               description: Sinks defines the sinks of accesslog.
                               items:
