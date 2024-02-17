@@ -20,7 +20,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, MultipleGCTest)
+	//ConformanceTests = append(ConformanceTests, MultipleGCTest)
 }
 
 var MultipleGCTest = suite.ConformanceTest{

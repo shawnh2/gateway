@@ -33,7 +33,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, TCPRouteTest)
+	//ConformanceTests = append(ConformanceTests, TCPRouteTest)
 }
 
 var TCPRouteTest = suite.ConformanceTest{

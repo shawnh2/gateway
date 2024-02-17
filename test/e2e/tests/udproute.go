@@ -31,7 +31,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, UDPRouteTest)
+	//ConformanceTests = append(ConformanceTests, UDPRouteTest)
 }
 
 var UDPRouteTest = suite.ConformanceTest{

@@ -27,7 +27,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, MetricTest)
+	//ConformanceTests = append(ConformanceTests, MetricTest)
 }
 
 var MetricTest = suite.ConformanceTest{

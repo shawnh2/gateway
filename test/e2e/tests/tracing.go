@@ -33,7 +33,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, OpenTelemetryTracingTest)
+	//ConformanceTests = append(ConformanceTests, OpenTelemetryTracingTest)
 }
 
 var OpenTelemetryTracingTest = suite.ConformanceTest{

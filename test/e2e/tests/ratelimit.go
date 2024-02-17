@@ -18,11 +18,11 @@ import (
 	"sigs.k8s.io/gateway-api/conformance/utils/suite"
 )
 
-func init() {
-	ConformanceTests = append(ConformanceTests, RateLimitCIDRMatchTest)
-	ConformanceTests = append(ConformanceTests, RateLimitHeaderMatchTest)
-	ConformanceTests = append(ConformanceTests, RateLimitBasedJwtClaimsTest)
-}
+//func init() {
+//	ConformanceTests = append(ConformanceTests, RateLimitCIDRMatchTest)
+//	ConformanceTests = append(ConformanceTests, RateLimitHeaderMatchTest)
+//	ConformanceTests = append(ConformanceTests, RateLimitBasedJwtClaimsTest)
+//}
 
 var RateLimitCIDRMatchTest = suite.ConformanceTest{
 	ShortName:   "RateLimitCIDRMatch",

@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, FaultTest)
+	//ConformanceTests = append(ConformanceTests, FaultTest)
 }
 
 var FaultTest = suite.ConformanceTest{

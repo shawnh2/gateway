@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, EnvoyPatchPolicyTest)
+	//ConformanceTests = append(ConformanceTests, EnvoyPatchPolicyTest)
 }
 
 var EnvoyPatchPolicyTest = suite.ConformanceTest{

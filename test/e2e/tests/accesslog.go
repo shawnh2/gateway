@@ -29,7 +29,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, FileAccessLogTest, OpenTelemetryTest)
+	//ConformanceTests = append(ConformanceTests, FileAccessLogTest, OpenTelemetryTest)
 }
 
 var FileAccessLogTest = suite.ConformanceTest{

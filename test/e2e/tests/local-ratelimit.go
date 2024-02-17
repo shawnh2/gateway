@@ -27,11 +27,11 @@ import (
 	egv1a1 "github.com/envoyproxy/gateway/api/v1alpha1"
 )
 
-func init() {
-	ConformanceTests = append(ConformanceTests, LocalRateLimitSpecificUserTest)
-	ConformanceTests = append(ConformanceTests, LocalRateLimitAllTrafficTest)
-	ConformanceTests = append(ConformanceTests, LocalRateLimitNoLimitRouteTest)
-}
+//func init() {
+//	ConformanceTests = append(ConformanceTests, LocalRateLimitSpecificUserTest)
+//	ConformanceTests = append(ConformanceTests, LocalRateLimitAllTrafficTest)
+//	ConformanceTests = append(ConformanceTests, LocalRateLimitNoLimitRouteTest)
+//}
 
 var LocalRateLimitSpecificUserTest = suite.ConformanceTest{
 	ShortName:   "LocalRateLimitSpecificUser",

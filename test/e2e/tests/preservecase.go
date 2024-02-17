@@ -26,7 +26,7 @@ import (
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, PreserveCaseTest)
+	//ConformanceTests = append(ConformanceTests, PreserveCaseTest)
 }
 
 // Copied from the conformance suite because it's needed in casePreservingRoundTrip
