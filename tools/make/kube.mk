@@ -101,7 +101,7 @@ conformance: create-cluster kube-install-image kube-deploy run-conformance delet
 experimental-conformance: create-cluster kube-install-image kube-deploy run-experimental-conformance delete-cluster ## Create a kind cluster, deploy EG into it, run Gateway API conformance, and clean up.
 
 .PHONY: e2e
-e2e: create-cluster kube-install-image kube-deploy install-ratelimit run-e2e delete-cluster
+e2e: create-cluster kube-install-image kube-deploy run-e2e delete-cluster
 
 .PHONY: install-ratelimit
 install-ratelimit:
@@ -113,12 +113,17 @@ install-ratelimit:
 	kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-ratelimit --for=condition=Available
 
 .PHONY: run-e2e
-run-e2e: prepare-e2e
+run-e2e:
 	@$(LOG_TARGET)
 	kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-ratelimit --for=condition=Available
 	kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-gateway --for=condition=Available
 	kubectl apply -f test/config/gatewayclass.yaml
 	go test -v -tags e2e ./test/e2e --gateway-class=envoy-gateway --debug=true
+	# show
+	kubectl get gc
+	kubectl get gtw -A
+	kubectl get svc -A
+	kubectl get httproutes -A
 
 .PHONY: prepare-e2e
 prepare-e2e: prepare-helm-repo install-fluent-bit install-loki install-tempo install-otel-collector
