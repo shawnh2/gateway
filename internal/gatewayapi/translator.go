@@ -6,7 +6,12 @@
 package gatewayapi
 
 import (
+	"fmt"
+	"strings"
+
+	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/utils/ptr"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	egv1a1 "github.com/envoyproxy/gateway/api/v1alpha1"
@@ -14,18 +19,21 @@ import (
 )
 
 const (
-	KindEnvoyProxy    = "EnvoyProxy"
-	KindGateway       = "Gateway"
-	KindGatewayClass  = "GatewayClass"
-	KindGRPCRoute     = "GRPCRoute"
-	KindHTTPRoute     = "HTTPRoute"
-	KindNamespace     = "Namespace"
-	KindTLSRoute      = "TLSRoute"
-	KindTCPRoute      = "TCPRoute"
-	KindUDPRoute      = "UDPRoute"
-	KindService       = "Service"
-	KindServiceImport = "ServiceImport"
-	KindSecret        = "Secret"
+	KindConfigMap           = "ConfigMap"
+	KindClientTrafficPolicy = "ClientTrafficPolicy"
+	KindEnvoyProxy          = "EnvoyProxy"
+	KindGateway             = "Gateway"
+	KindGatewayClass        = "GatewayClass"
+	KindGRPCRoute           = "GRPCRoute"
+	KindHTTPRoute           = "HTTPRoute"
+	KindNamespace           = "Namespace"
+	KindTLSRoute            = "TLSRoute"
+	KindTCPRoute            = "TCPRoute"
+	KindUDPRoute            = "UDPRoute"
+	KindService             = "Service"
+	KindServiceImport       = "ServiceImport"
+	KindSecret              = "Secret"
+	KindSecurityPolicy      = "SecurityPolicy"
 
 	GroupMultiClusterService = "multicluster.x-k8s.io"
 	// OwningGatewayNamespaceLabel is the owner reference label used for managed infra.
@@ -78,6 +86,10 @@ type Translator struct {
 	// MergeGateways is true when all Gateway Listeners
 	// should be merged under the parent GatewayClass.
 	MergeGateways bool
+
+	// EnvoyPatchPolicyEnabled when the EnvoyPatchPolicy
+	// feature is enabled.
+	EnvoyPatchPolicyEnabled bool
 
 	// ExtensionGroupKinds stores the group/kind for all resources
 	// introduced by an Extension so that the translator can
@@ -146,7 +158,7 @@ func (t *Translator) Translate(resources *Resources) *TranslateResult {
 	t.ProcessEnvoyPatchPolicies(resources.EnvoyPatchPolicies, xdsIR)
 
 	// Process ClientTrafficPolicies
-	clientTrafficPolicies := ProcessClientTrafficPolicies(resources.ClientTrafficPolicies, gateways, xdsIR)
+	clientTrafficPolicies := t.ProcessClientTrafficPolicies(resources, gateways, xdsIR, infraIR)
 
 	// Process all Addresses for all relevant Gateways.
 	t.ProcessAddresses(gateways, xdsIR, infraIR, resources)
@@ -187,17 +199,67 @@ func (t *Translator) Translate(resources *Resources) *TranslateResult {
 	// Process BackendTrafficPolicies
 	backendTrafficPolicies := t.ProcessBackendTrafficPolicies(
 		resources.BackendTrafficPolicies, gateways, routes, xdsIR)
+
 	// Process SecurityPolicies
 	securityPolicies := t.ProcessSecurityPolicies(
-		resources.SecurityPolicies, gateways, routes, xdsIR)
+		resources.SecurityPolicies, gateways, routes, resources, xdsIR)
 
 	// Sort xdsIR based on the Gateway API spec
 	sortXdsIRMap(xdsIR)
+
+	// Add a catch-all route for each HTTP listener if needed
+	addCatchAllRoute(xdsIR)
 
 	return newTranslateResult(gateways, httpRoutes, grpcRoutes, tlsRoutes,
 		tcpRoutes, udpRoutes, clientTrafficPolicies, backendTrafficPolicies,
 		securityPolicies, xdsIR, infraIR)
 
+}
+
+// For filters without native per-route support, we need to add a catch-all route
+// to ensure that these filters are disabled for non-matching requests.
+// https://github.com/envoyproxy/gateway/issues/2507
+func addCatchAllRoute(xdsIR map[string]*ir.Xds) {
+	for _, i := range xdsIR {
+		for _, http := range i.HTTP {
+			var needCatchAllRoutePerHost = make(map[string]bool)
+			for _, r := range http.Routes {
+				if r.ExtAuth != nil || r.BasicAuth != nil || r.OIDC != nil {
+					needCatchAllRoutePerHost[r.Hostname] = true
+				}
+			}
+
+			// skip if there is already a catch-all route
+			for host := range needCatchAllRoutePerHost {
+				for _, r := range http.Routes {
+					if (r.Hostname == host &&
+						r.PathMatch != nil &&
+						r.PathMatch.Prefix != nil &&
+						*r.PathMatch.Prefix == "/") &&
+						len(r.HeaderMatches) == 0 &&
+						len(r.QueryParamMatches) == 0 {
+						delete(needCatchAllRoutePerHost, host)
+					}
+				}
+			}
+
+			for host, needCatchAllRoute := range needCatchAllRoutePerHost {
+				if needCatchAllRoute {
+					underscoredHost := strings.ReplaceAll(host, ".", "_")
+					http.Routes = append(http.Routes, &ir.HTTPRoute{
+						Name: fmt.Sprintf("%s/catch-all-return-404", underscoredHost),
+						PathMatch: &ir.StringMatch{
+							Prefix: ptr.To("/"),
+						},
+						DirectResponse: &ir.DirectResponse{
+							StatusCode: 404,
+						},
+						Hostname: host,
+					})
+				}
+			}
+		}
+	}
 }
 
 // GetRelevantGateways returns GatewayContexts, containing a copy of the original
@@ -232,13 +294,21 @@ func (t *Translator) InitIRs(gateways []*GatewayContext, resources *Resources) (
 	for _, gateway := range gateways {
 		gwXdsIR := &ir.Xds{}
 		gwInfraIR := ir.NewInfra()
+		labels := infrastructureLabels(gateway.Gateway)
+		annotations := infrastructureAnnotations(gateway.Gateway)
+		gwInfraIR.Proxy.GetProxyMetadata().Annotations = annotations
+
 		if isMergeGatewaysEnabled(resources) {
 			t.MergeGateways = true
 			irKey = string(t.GatewayClassName)
-			gwInfraIR.Proxy.GetProxyMetadata().Labels = GatewayClassOwnerLabel(string(t.GatewayClassName))
+
+			maps.Copy(labels, GatewayClassOwnerLabel(string(t.GatewayClassName)))
+			gwInfraIR.Proxy.GetProxyMetadata().Labels = labels
 		} else {
 			irKey = irStringKey(gateway.Gateway.Namespace, gateway.Gateway.Name)
-			gwInfraIR.Proxy.GetProxyMetadata().Labels = GatewayOwnerLabels(gateway.Namespace, gateway.Name)
+
+			maps.Copy(labels, GatewayOwnerLabels(gateway.Namespace, gateway.Name))
+			gwInfraIR.Proxy.GetProxyMetadata().Labels = labels
 		}
 
 		gwInfraIR.Proxy.Name = irKey
@@ -248,6 +318,27 @@ func (t *Translator) InitIRs(gateways []*GatewayContext, resources *Resources) (
 	}
 
 	return xdsIR, infraIR
+}
+
+func infrastructureAnnotations(gtw *gwapiv1.Gateway) map[string]string {
+	if gtw.Spec.Infrastructure != nil && len(gtw.Spec.Infrastructure.Annotations) > 0 {
+		res := make(map[string]string)
+		for k, v := range gtw.Spec.Infrastructure.Annotations {
+			res[string(k)] = string(v)
+		}
+		return res
+	}
+	return nil
+}
+
+func infrastructureLabels(gtw *gwapiv1.Gateway) map[string]string {
+	res := make(map[string]string)
+	if gtw.Spec.Infrastructure != nil {
+		for k, v := range gtw.Spec.Infrastructure.Labels {
+			res[string(k)] = string(v)
+		}
+	}
+	return res
 }
 
 // XdsIR and InfraIR map keys by default are {GatewayNamespace}/{GatewayName}, but if mergeGateways is set, they are merged under {GatewayClassName} key.
