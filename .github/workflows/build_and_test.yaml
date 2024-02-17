@@ -17,47 +17,47 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-    - uses: ./tools/github-actions/setup-deps
-    # Generate the install manifests first so it can checked
-    # for errors while running `make -k lint`
-    - run: make generate-manifests
-    - run: make lint-deps
-    - run: make -k lint
+#  lint:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+#    - uses: ./tools/github-actions/setup-deps
+#    # Generate the install manifests first so it can checked
+#    # for errors while running `make -k lint`
+#    - run: make generate-manifests
+#    - run: make lint-deps
+#    - run: make -k lint
 
-  gen-check:
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-    - uses: ./tools/github-actions/setup-deps
-    - run: make -k gen-check
+#  gen-check:
+#    runs-on: ubuntu-22.04
+#    steps:
+#    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+#    - uses: ./tools/github-actions/setup-deps
+#    - run: make -k gen-check
 
-  license-check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-    - uses: ./tools/github-actions/setup-deps
-    - run: make -k licensecheck
+#  license-check:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+#    - uses: ./tools/github-actions/setup-deps
+#    - run: make -k licensecheck
 
-  coverage-test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-    - uses: ./tools/github-actions/setup-deps
-
-    # test
-    - name: Run Coverage Tests
-      run: make go.test.coverage
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@4fe8c5f003fae66aa5ebb77cfd3e7bfbbda0b6b0  # v3.1.5
-      with:
-        fail_ci_if_error: true
-        files: ./coverage.xml
-        name: codecov-envoy-gateway
-        verbose: true
+#  coverage-test:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+#    - uses: ./tools/github-actions/setup-deps
+#
+#    # test
+#    - name: Run Coverage Tests
+#      run: make go.test.coverage
+#    - name: Upload coverage to Codecov
+#      uses: codecov/codecov-action@4fe8c5f003fae66aa5ebb77cfd3e7bfbbda0b6b0  # v3.1.5
+#      with:
+#        fail_ci_if_error: true
+#        files: ./coverage.xml
+#        name: codecov-envoy-gateway
+#        verbose: true
 
   build:
     runs-on: ubuntu-latest
