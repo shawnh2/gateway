@@ -115,11 +115,10 @@ install-ratelimit:
 .PHONY: run-e2e
 run-e2e:
 	@$(LOG_TARGET)
-	kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-ratelimit --for=condition=Available
+	#kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-ratelimit --for=condition=Available
 	kubectl wait --timeout=5m -n envoy-gateway-system deployment/envoy-gateway --for=condition=Available
 	kubectl apply -f test/config/gatewayclass.yaml
 	go test -v -tags e2e ./test/e2e --gateway-class=envoy-gateway --debug=true
-	# show
 	kubectl get gc
 	kubectl get gtw -A
 	kubectl get svc -A
