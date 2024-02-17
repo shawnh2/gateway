@@ -17,16 +17,16 @@ permissions:
   contents: read
 
 jobs:
-#  lint:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-#    - uses: ./tools/github-actions/setup-deps
-#    # Generate the install manifests first so it can checked
-#    # for errors while running `make -k lint`
-#    - run: make generate-manifests
-#    - run: make lint-deps
-#    - run: make -k lint
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+    - uses: ./tools/github-actions/setup-deps
+    # Generate the install manifests first so it can checked
+    # for errors while running `make -k lint`
+    - run: make generate-manifests
+    - run: make lint-deps
+    - run: make -k lint
 
 #  gen-check:
 #    runs-on: ubuntu-22.04
