@@ -1,19 +1,19 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
-  name: envoy-merge-gateways
+  name: merge-gateways
 spec:
   controllerName: gateway.envoyproxy.io/gatewayclass-controller
   parametersRef:
     group: gateway.envoyproxy.io
     kind: EnvoyProxy
-    name: merge-gateways-proxy-config
+    name: merge-gateways-config
     namespace: envoy-gateway-system
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
-  name: merge-gateways-proxy-config
+  name: merge-gateways-config
   namespace: envoy-gateway-system
 spec:
   mergeGateways: true
@@ -24,7 +24,7 @@ metadata:
   name: merged-gateway-1
   namespace: gateway-conformance-infra
 spec:
-  gatewayClassName: envoy-merge-gateways
+  gatewayClassName: merge-gateways
   listeners:
     - allowedRoutes:
         namespaces:
@@ -39,7 +39,7 @@ metadata:
   name: merged-gateway-2
   namespace: gateway-conformance-infra
 spec:
-  gatewayClassName: envoy-merge-gateways
+  gatewayClassName: merge-gateways
   listeners:
     - allowedRoutes:
         namespaces:
@@ -54,7 +54,7 @@ metadata:
   name: merged-gateway-3
   namespace: gateway-conformance-infra
 spec:
-  gatewayClassName: envoy-merge-gateways
+  gatewayClassName: merge-gateways
   listeners:
     - allowedRoutes:
         namespaces:
@@ -74,8 +74,11 @@ spec:
       sectionName: http
   rules:
     - backendRefs:
-        - name: infra-backend-v1
+        - group: ""
+          kind: Service
+          name: infra-backend-v1
           port: 8080
+          weight: 1
       matches:
         - path:
             type: PathPrefix
@@ -92,8 +95,11 @@ spec:
       sectionName: http
   rules:
     - backendRefs:
-        - name: infra-backend-v2
+        - group: ""
+          kind: Service
+          name: infra-backend-v2
           port: 8080
+          weight: 1
       matches:
         - path:
             type: PathPrefix
@@ -110,8 +116,11 @@ spec:
       sectionName: http
   rules:
     - backendRefs:
-        - name: infra-backend-v3
+        - group: ""
+          kind: Service
+          name: infra-backend-v3
           port: 8080
+          weight: 1
       matches:
         - path:
             type: PathPrefix
