@@ -42,13 +42,12 @@ func TestE2E(t *testing.T) {
 			*flags.GatewayClassName, *flags.CleanupBaseResources, *flags.ShowDebug, *flags.SupportedFeatures, *flags.ExemptFeatures)
 
 		// This test suite runs e2e test with only one base GatewayClass.
+		// Do not clean up base resources, save them for the next test suit.
 		cSuite := suite.New(suite.Options{
-			Client:               client,
-			GatewayClassName:     *flags.GatewayClassName,
-			Debug:                *flags.ShowDebug,
-			CleanupBaseResources: *flags.CleanupBaseResources,
-			FS:                   &Manifests,
-			BaseManifests:        "manifests/base/manifests.yaml",
+			Client:           client,
+			GatewayClassName: *flags.GatewayClassName,
+			Debug:            *flags.ShowDebug,
+			FS:               &Manifests,
 		})
 
 		cSuite.Setup(t)
@@ -58,17 +57,18 @@ func TestE2E(t *testing.T) {
 
 	t.Run("MergeGateways E2E", func(t *testing.T) {
 		mergeGatewaysSuiteGatewayClassName := "merge-gateways"
+
 		t.Logf("Running E2E tests with %s GatewayClass\n cleanup: %t\n debug: %t\n supported features: [%v]\n exempt features: [%v]",
 			mergeGatewaysSuiteGatewayClassName, *flags.CleanupBaseResources, *flags.ShowDebug, *flags.SupportedFeatures, *flags.ExemptFeatures)
 
 		// This test suite runs e2e test with GatewayClass that enables MergeGateways feature.
+		// Clean base resources since it is the last test suite.
 		mergeGatewaysSuite := suite.New(suite.Options{
 			Client:               client,
 			GatewayClassName:     mergeGatewaysSuiteGatewayClassName,
 			Debug:                *flags.ShowDebug,
 			CleanupBaseResources: *flags.CleanupBaseResources,
-			FS:                   &MergeGatewaysManifests,
-			BaseManifests:        "manifests/merge-gateways/manifests.yaml",
+			FS:                   &Manifests,
 		})
 
 		mergeGatewaysSuite.Setup(t)
