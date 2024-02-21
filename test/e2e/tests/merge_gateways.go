@@ -61,27 +61,28 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				t.Errorf("inconsistent gateway address %s and %s for %s and %s", gw1Addr, gw2Addr, gw1NN.String(), gw2NN.String())
 				t.FailNow()
 			}
+
 			if gw2Addr != gw3Addr {
 				t.Errorf("inconsistent gateway address %s and %s for %s and %s", gw2Addr, gw3Addr, gw2NN.String(), gw3NN.String())
 				t.FailNow()
 			}
 
 			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw1HostPort, http.ExpectedResponse{
-				Request:   http.Request{Path: "/merge1"},
+				Request:   http.Request{Path: "/merge1", Host: "www.example1.com"},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
 				Backend:   "infra-backend-v1",
 			})
 
 			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw2HostPort, http.ExpectedResponse{
-				Request:   http.Request{Path: "/merge2"},
+				Request:   http.Request{Path: "/merge2", Host: "www.example2.com"},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
 				Backend:   "infra-backend-v2",
 			})
 
 			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw3HostPort, http.ExpectedResponse{
-				Request:   http.Request{Path: "/merge3"},
+				Request:   http.Request{Path: "/merge3", Host: "www.example3.com"},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
 				Backend:   "infra-backend-v3",
