@@ -47,7 +47,7 @@ func TestE2E(t *testing.T) {
 		Debug:                *flags.ShowDebug,
 		CleanupBaseResources: *flags.CleanupBaseResources,
 		FS:                   &Manifests,
-		BaseManifests:        "manifests.yaml",
+		BaseManifests:        "manifests/base/manifests.yaml",
 	})
 
 	cSuite.Setup(t)
@@ -65,7 +65,7 @@ func TestE2E(t *testing.T) {
 		Debug:                *flags.ShowDebug,
 		CleanupBaseResources: *flags.CleanupBaseResources,
 		FS:                   &MergeGatewaysManifests,
-		BaseManifests:        "manifests.yaml",
+		BaseManifests:        "manifests/merge-gateways/manifests.yaml",
 	})
 
 	mergeGatewaysSuite.Setup(t)
