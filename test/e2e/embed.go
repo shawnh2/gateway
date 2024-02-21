@@ -14,6 +14,6 @@ var (
 	//go:embed testdata/*.yaml base/*
 	Manifests embed.FS
 
-	//go:embed testdata/merge-gateways/*.yaml
+	//go:embed testdata/merge-gateways/*.yaml base/*
 	MergeGatewaysManifests embed.FS
 )
