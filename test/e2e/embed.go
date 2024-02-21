@@ -10,5 +10,10 @@ package e2e
 
 import "embed"
 
-//go:embed testdata/*.yaml base/*
-var Manifests embed.FS
+var (
+	//go:embed testdata/*.yaml base/*
+	Manifests embed.FS
+
+	//go:embed testdata/merge-gateways/*.yaml
+	MergeGatewaysManifests embed.FS
+)

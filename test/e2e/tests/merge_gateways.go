@@ -14,18 +14,19 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/gateway-api/conformance/utils/http"
 	"sigs.k8s.io/gateway-api/conformance/utils/kubernetes"
 	"sigs.k8s.io/gateway-api/conformance/utils/suite"
 )
 
 func init() {
-	ConformanceTests = append(ConformanceTests, MergeGatewaysTest)
+	MergeGatewaysTests = append(MergeGatewaysTests, MergeGatewaysTest)
 }
 
 var MergeGatewaysTest = suite.ConformanceTest{
 	ShortName:   "MergeGateways",
 	Description: "Merge gateways on to a single EnvoyProxy",
-	Manifests:   []string{"testdata/merge-gateways.yaml"},
+	Manifests:   []string{"testdata/merge-gateways/base.yaml"},
 	Test: func(t *testing.T, suite *suite.ConformanceTestSuite) {
 		ns := "gateway-conformance-infra"
 
@@ -56,36 +57,36 @@ var MergeGatewaysTest = suite.ConformanceTest{
 		t.Run("merged three gateways under the same namespace with http routes", func(t *testing.T) {
 			if gw1Addr != gw2Addr {
 				fmt.Println("failed to merge gateways: inconsistent gateway address %s and %s for %s and %s", gw1Addr, gw2Addr, gw1NN.String(), gw2NN.String())
-				//t.FailNow()
+				t.FailNow()
 			}
 			if gw2Addr != gw3Addr {
 				fmt.Println("failed to merge gateways: inconsistent gateway address %s and %s for %s and %s", gw2Addr, gw3Addr, gw2NN.String(), gw3NN.String())
-				//t.FailNow()
+				t.FailNow()
 			}
 
 			// Three gateways should have the same address.
-			//gwAddr := gw1Addr
-			//
-			//http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, http.ExpectedResponse{
-			//	Request:   http.Request{Path: "/merge1"},
-			//	Response:  http.Response{StatusCode: 200},
-			//	Namespace: ns,
-			//	Backend:   "infra-backend-v1",
-			//})
-			//
-			//http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, http.ExpectedResponse{
-			//	Request:   http.Request{Path: "/merge2"},
-			//	Response:  http.Response{StatusCode: 200},
-			//	Namespace: ns,
-			//	Backend:   "infra-backend-v2",
-			//})
-			//
-			//http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, http.ExpectedResponse{
-			//	Request:   http.Request{Path: "/merge3"},
-			//	Response:  http.Response{StatusCode: 200},
-			//	Namespace: ns,
-			//	Backend:   "infra-backend-v3",
-			//})
+			gwAddr := gw1Addr
+
+			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, http.ExpectedResponse{
+				Request:   http.Request{Path: "/merge1"},
+				Response:  http.Response{StatusCode: 200},
+				Namespace: ns,
+				Backend:   "infra-backend-v1",
+			})
+
+			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, http.ExpectedResponse{
+				Request:   http.Request{Path: "/merge2"},
+				Response:  http.Response{StatusCode: 200},
+				Namespace: ns,
+				Backend:   "infra-backend-v2",
+			})
+
+			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, http.ExpectedResponse{
+				Request:   http.Request{Path: "/merge3"},
+				Response:  http.Response{StatusCode: 200},
+				Namespace: ns,
+				Backend:   "infra-backend-v3",
+			})
 		})
 	},
 }
