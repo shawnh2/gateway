@@ -27,7 +27,7 @@ var MergeGatewaysTest = suite.ConformanceTest{
 	Description: "Basic test for MergeGateways feature",
 	Manifests:   []string{"testdata/basic-merge-gateways.yaml"},
 	Test: func(t *testing.T, suite *suite.ConformanceTestSuite) {
-		ns := "gateway-conformance-app-backend"
+		ns := "gateway-conformance-infra"
 
 		route1NN := types.NamespacedName{Name: "merged-gateway-route-1", Namespace: ns}
 		gw1NN := types.NamespacedName{Name: "merged-gateway-1", Namespace: ns}
@@ -37,7 +37,11 @@ var MergeGatewaysTest = suite.ConformanceTest{
 		gw2NN := types.NamespacedName{Name: "merged-gateway-2", Namespace: ns}
 		gw2HostPort := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw2NN), route2NN)
 
-		t.Run("merged gateways under the same namespace with http routes", func(t *testing.T) {
+		route3NN := types.NamespacedName{Name: "merged-gateway-route-3", Namespace: ns}
+		gw3NN := types.NamespacedName{Name: "merged-gateway-3", Namespace: ns}
+		gw3HostPort := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw3NN), route3NN)
+
+		t.Run("merged three gateways under the same namespace with http routes", func(t *testing.T) {
 			gw1Addr, _, err := net.SplitHostPort(gw1HostPort)
 			if err != nil {
 				t.Errorf("failed to split hostport %s of gateway %s: %v", gw1HostPort, gw1NN.Name, err)
@@ -48,8 +52,18 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				t.Errorf("failed to split hostport %s of gateway %s: %v", gw2HostPort, gw2NN.Name, err)
 			}
 
+			gw3Addr, _, err := net.SplitHostPort(gw3HostPort)
+			if err != nil {
+				t.Errorf("failed to split hostport %s of gateway %s: %v", gw2HostPort, gw2NN.Name, err)
+			}
+
 			if gw1Addr != gw2Addr {
 				t.Errorf("inconsistent gateway address %s and %s for %s and %s", gw1Addr, gw2Addr, gw1NN.String(), gw2NN.String())
+				t.FailNow()
+			}
+
+			if gw2Addr != gw3Addr {
+				t.Errorf("inconsistent gateway address %s and %s for %s and %s", gw2Addr, gw3Addr, gw2NN.String(), gw3NN.String())
 				t.FailNow()
 			}
 
@@ -57,14 +71,21 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				Request:   http.Request{Path: "/merge1", Host: "www.example1.com"},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
-				Backend:   "app-backend-v1",
+				Backend:   "infra-backend-v1",
 			})
 
 			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw2HostPort, http.ExpectedResponse{
 				Request:   http.Request{Path: "/merge2", Host: "www.example2.com"},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
-				Backend:   "app-backend-v2",
+				Backend:   "infra-backend-v2",
+			})
+
+			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw3HostPort, http.ExpectedResponse{
+				Request:   http.Request{Path: "/merge3", Host: "www.example3.com"},
+				Response:  http.Response{StatusCode: 200},
+				Namespace: ns,
+				Backend:   "infra-backend-v3",
 			})
 		})
 	},
