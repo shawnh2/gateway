@@ -25,7 +25,7 @@ func init() {
 var MergeGatewaysTest = suite.ConformanceTest{
 	ShortName:   "BasicMergeGateways",
 	Description: "Basic test for MergeGateways feature",
-	Manifests:   []string{"testdata/merge-gateways/basic-merge-gateways.yaml"},
+	Manifests:   []string{"testdata/basic-merge-gateways.yaml"},
 	Test: func(t *testing.T, suite *suite.ConformanceTestSuite) {
 		ns := "gateway-conformance-infra"
 

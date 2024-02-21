@@ -9,7 +9,7 @@ spec:
     - allowedRoutes:
         namespaces:
           from: Same
-      name: http
+      name: http1
       port: 8080
       protocol: HTTP
 ---
@@ -24,7 +24,7 @@ spec:
     - allowedRoutes:
         namespaces:
           from: Same
-      name: http
+      name: http2
       port: 8081
       protocol: HTTP
 ---
@@ -39,7 +39,7 @@ spec:
     - allowedRoutes:
         namespaces:
           from: Same
-      name: http
+      name: http3
       port: 8082
       protocol: HTTP
 ---
