@@ -9,8 +9,6 @@
 package tests
 
 import (
-	"fmt"
-	"net"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/types"
@@ -26,41 +24,29 @@ func init() {
 var MergeGatewaysTest = suite.ConformanceTest{
 	ShortName:   "MergeGateways",
 	Description: "Merge gateways on to a single EnvoyProxy",
-	Manifests:   []string{"testdata/merge-gateways/base.yaml"},
+	Manifests:   []string{"testdata/merge-gateways/basic-merge-gateways.yaml"},
 	Test: func(t *testing.T, suite *suite.ConformanceTestSuite) {
 		ns := "gateway-conformance-infra"
 
 		route1NN := types.NamespacedName{Name: "merged-gateway-route-1", Namespace: ns}
 		gw1NN := types.NamespacedName{Name: "merged-gateway-1", Namespace: ns}
-		gw1HostPort := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw1NN), route1NN)
-		gw1Addr, _, err := net.SplitHostPort(gw1HostPort)
-		if err != nil {
-			t.Errorf("failed to split the hostport of %s: %s, reason: %v", gw1NN.String(), gw1HostPort, err)
-		}
+		gw1Addr := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw1NN), route1NN)
 
 		route2NN := types.NamespacedName{Name: "merged-gateway-route-2", Namespace: ns}
 		gw2NN := types.NamespacedName{Name: "merged-gateway-2", Namespace: ns}
-		gw2HostPort := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw2NN), route2NN)
-		gw2Addr, _, err := net.SplitHostPort(gw2HostPort)
-		if err != nil {
-			t.Errorf("failed to split the hostport of %s: %s, reason: %v", gw2NN.String(), gw2HostPort, err)
-		}
+		gw2Addr := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw2NN), route2NN)
 
 		route3NN := types.NamespacedName{Name: "merged-gateway-route-3", Namespace: ns}
 		gw3NN := types.NamespacedName{Name: "merged-gateway-3", Namespace: ns}
-		gw3HostPort := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw3NN), route3NN)
-		gw3Addr, _, err := net.SplitHostPort(gw3HostPort)
-		if err != nil {
-			t.Errorf("failed to split the hostport of %s: %s, reason: %v", gw3NN.String(), gw3HostPort, err)
-		}
+		gw3Addr := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw3NN), route3NN)
 
 		t.Run("merged three gateways under the same namespace with http routes", func(t *testing.T) {
 			if gw1Addr != gw2Addr {
-				fmt.Println("failed to merge gateways: inconsistent gateway address %s and %s for %s and %s", gw1Addr, gw2Addr, gw1NN.String(), gw2NN.String())
+				t.Errorf("failed to merge gateways: inconsistent gateway address %s and %s for %s and %s", gw1Addr, gw2Addr, gw1NN.String(), gw2NN.String())
 				t.FailNow()
 			}
 			if gw2Addr != gw3Addr {
-				fmt.Println("failed to merge gateways: inconsistent gateway address %s and %s for %s and %s", gw2Addr, gw3Addr, gw2NN.String(), gw3NN.String())
+				t.Errorf("failed to merge gateways: inconsistent gateway address %s and %s for %s and %s", gw2Addr, gw3Addr, gw2NN.String(), gw3NN.String())
 				t.FailNow()
 			}
 
