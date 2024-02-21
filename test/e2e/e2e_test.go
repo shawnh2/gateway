@@ -64,10 +64,14 @@ func TestE2E(t *testing.T) {
 			Client:           client,
 			GatewayClassName: mergeGatewaysSuiteGatewayClassName,
 			Debug:            *flags.ShowDebug,
-			FS:               &Manifests,
+			//FS:               &Manifests,
 		})
 
 		//mergeGatewaysSuite.Setup(t)
+		mergeGatewaysSuite.ControllerName = "gateway.envoyproxy.io/gatewayclass-controller"
+		mergeGatewaysSuite.Applier.FS = Manifests
+		mergeGatewaysSuite.Applier.GatewayClass = mergeGatewaysSuiteGatewayClassName
+
 		t.Logf("Running %d E2E tests for MergeGateways feature", len(tests.MergeGatewaysTests))
 		mergeGatewaysSuite.Run(t, tests.MergeGatewaysTests)
 	})
