@@ -197,7 +197,8 @@ run-conformance: ## Run Gateway API conformance.
 	@$(LOG_TARGET)
 	kubectl wait --timeout=$(WAIT_TIMEOUT) -n envoy-gateway-system deployment/envoy-gateway --for=condition=Available
 	kubectl apply -f test/config/gatewayclass.yaml
-	go test -v -tags conformance ./test/conformance --gateway-class=envoy-gateway --debug=true
+	go test -v -tags conformance ./test/conformance --gateway-class=envoy-gateway --debug=true --cleanup-base-resources=false --run-test GatewayModifyListeners
+	kubectl logs -n envoy-gateway-system --selector control-plane=envoy-gateway,app.kubernetes.io/instance=eg
 
 CONFORMANCE_REPORT_PATH ?= 
 

@@ -6,6 +6,7 @@
 package gatewayapi
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -31,8 +32,14 @@ func (g *GatewayContext) ResetListeners() {
 	numListeners := len(g.Spec.Listeners)
 	g.Status.Listeners = make([]gwapiv1.ListenerStatus, numListeners)
 	g.listeners = make([]*ListenerContext, numListeners)
+
+	fmt.Println("@@@", "gtw", g.Namespace, g.Name, "got", numListeners, "listeners:")
+
 	for i := range g.Spec.Listeners {
 		listener := &g.Spec.Listeners[i]
+
+		fmt.Println("@@@", "got listener", listener.Name, "for gtw", g.Namespace, g.Name)
+
 		g.Status.Listeners[i] = gwapiv1.ListenerStatus{Name: listener.Name}
 		g.listeners[i] = &ListenerContext{
 			Listener:          listener,
