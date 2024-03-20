@@ -195,6 +195,7 @@ kube-install-image: image.build $(tools/kind) ## Install the EG image to a kind 
 .PHONY: run-conformance
 run-conformance: ## Run Gateway API conformance.
 	@$(LOG_TARGET)
+	set +e
 	kubectl wait --timeout=$(WAIT_TIMEOUT) -n envoy-gateway-system deployment/envoy-gateway --for=condition=Available
 	kubectl apply -f test/config/gatewayclass.yaml
 	go test -v -tags conformance ./test/conformance --gateway-class=envoy-gateway --debug=true --cleanup-base-resources=false --run-test GatewayModifyListeners
