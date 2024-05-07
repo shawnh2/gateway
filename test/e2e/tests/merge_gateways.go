@@ -81,7 +81,7 @@ var MergeGatewaysTest = suite.ConformanceTest{
 			}
 		})
 
-		t.Run("one of the conflicted gateways should have conflicted status", func(t *testing.T) {
+		t.Run("conflicted gateways should surface conflicted status", func(t *testing.T) {
 			conflictedListener := []gwapiv1.ListenerStatus{{
 				Name: gwapiv1.SectionName("http3"),
 				SupportedKinds: []gwapiv1.RouteGroupKind{
@@ -171,7 +171,7 @@ var MergeGatewaysTest = suite.ConformanceTest{
 			})
 		})
 
-		t.Run("three gateways under same namespace should has the same address", func(t *testing.T) {
+		t.Run("merged gateways under same namespace should has the same address", func(t *testing.T) {
 			if len(nonConflictedGatewayKey.String()) == 0 || len(nonConflictedRouteKey.String()) == 0 {
 				t.Error("failed to get non-conflicted gateway key")
 				t.FailNow()
@@ -202,6 +202,7 @@ var MergeGatewaysTest = suite.ConformanceTest{
 			}
 
 			consistentGatewayAddress = gw1Addr
+			t.Logf("got consistent gateway address: %s", consistentGatewayAddress)
 		})
 
 		t.Run("merged gateways should receive traffic from different http routes", func(t *testing.T) {
@@ -210,14 +211,18 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				t.FailNow()
 			}
 
-			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, consistentGatewayAddress, http.ExpectedResponse{
+			gw1HostPort := net.JoinHostPort(consistentGatewayAddress, "8080")
+			gw2HostPort := net.JoinHostPort(consistentGatewayAddress, "8081")
+			gw3HostPort := net.JoinHostPort(consistentGatewayAddress, "8082")
+
+			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw1HostPort, http.ExpectedResponse{
 				Request:   http.Request{Path: "/merge1", Host: "www.example1.com"},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
 				Backend:   "infra-backend-v1",
 			})
 
-			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, consistentGatewayAddress, http.ExpectedResponse{
+			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw2HostPort, http.ExpectedResponse{
 				Request:   http.Request{Path: "/merge2", Host: "www.example2.com"},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
@@ -233,7 +238,7 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				host = "www.example4.com"
 			}
 
-			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, consistentGatewayAddress, http.ExpectedResponse{
+			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw3HostPort, http.ExpectedResponse{
 				Request:   http.Request{Path: path, Host: host},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
