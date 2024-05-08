@@ -44,11 +44,6 @@ var MergeGatewaysTest = suite.ConformanceTest{
 			gw3NN = types.NamespacedName{Name: "merged-gateway-3", Namespace: ns}
 			gw4NN = types.NamespacedName{Name: "merged-gateway-4", Namespace: ns}
 
-			// should be one of gw3 or gw4
-			conflictedGatewayKey    types.NamespacedName
-			nonConflictedGatewayKey types.NamespacedName
-			nonConflictedRouteKey   types.NamespacedName
-
 			consistentGatewayAddress string
 		)
 
@@ -63,7 +58,7 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				t.Errorf("failed to get the address of gateway %s", gw4NN.String())
 			}
 
-			// Even the gateway cannot be merged, they still have the same address.
+			// Even these gateways cannot be merged, they still have the same address.
 			gw3Addr, _, err := net.SplitHostPort(gw3HostPort)
 			if err != nil {
 				t.Errorf("failed to split hostport %s of gateway %s: %v", gw3HostPort, gw3NN.String(), err)
@@ -81,7 +76,7 @@ var MergeGatewaysTest = suite.ConformanceTest{
 			}
 		})
 
-		t.Run("conflicted gateways should surface conflicted status", func(t *testing.T) {
+		t.Run("the conflicted gateway should surface conflicted status", func(t *testing.T) {
 			conflictedListener := []gwapiv1.ListenerStatus{{
 				Name: gwapiv1.SectionName("http3"),
 				SupportedKinds: []gwapiv1.RouteGroupKind{
@@ -108,75 +103,24 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				Reason: "NoReadyListeners",
 			}
 
-			conflictedStatusGw3, conflictedStatusGw4 := false, false
-
-			if t.Run("check whether gateway-3 has conflicted listener", func(t *testing.T) {
-				kubernetes.GatewayStatusMustHaveListeners(t, suite.Client, suite.TimeoutConfig, gw3NN, conflictedListener)
-				kubernetes.HTTPRouteMustHaveCondition(t, suite.Client, suite.TimeoutConfig, route3NN, gw3NN, expectedHTTPRouteCondition)
-			}) {
-				conflictedStatusGw3 = true
-			}
-
-			if t.Run("check whether gateway-4 has conflicted listener", func(t *testing.T) {
-				kubernetes.GatewayStatusMustHaveListeners(t, suite.Client, suite.TimeoutConfig, gw4NN, conflictedListener)
-				kubernetes.HTTPRouteMustHaveCondition(t, suite.Client, suite.TimeoutConfig, route4NN, gw4NN, expectedHTTPRouteCondition)
-			}) {
-				conflictedStatusGw4 = true
-			}
-
-			if conflictedStatusGw3 == conflictedStatusGw4 {
-				t.Error("conflicted status should only be in one of the conflicted gateway listener or route")
-				t.FailNow()
-			}
-
-			if conflictedStatusGw3 {
-				conflictedGatewayKey = gw3NN
-				nonConflictedGatewayKey = gw4NN
-				nonConflictedRouteKey = route4NN
-			}
-
-			if conflictedStatusGw4 {
-				conflictedGatewayKey = gw4NN
-				nonConflictedGatewayKey = gw3NN
-				nonConflictedRouteKey = route3NN
-			}
-
-			t.Logf("got gateway %s with conflicted listener", conflictedGatewayKey.String())
+			kubernetes.GatewayStatusMustHaveListeners(t, suite.Client, suite.TimeoutConfig, gw4NN, conflictedListener)
+			kubernetes.HTTPRouteMustHaveCondition(t, suite.Client, suite.TimeoutConfig, route4NN, gw4NN, expectedHTTPRouteCondition)
 		})
 
 		t.Run("the conflicted gateway should not receive any traffic", func(t *testing.T) {
-			if len(conflictedGatewayKey.String()) == 0 {
-				t.Error("failed to get conflicted gateway key")
-				t.FailNow()
-			}
-
-			conflictedGatewayHostPort, err := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig, conflictedGatewayKey)
+			conflictedGatewayHostPort, err := kubernetes.WaitForGatewayAddress(t, suite.Client, suite.TimeoutConfig, gw4NN)
 			if err != nil {
-				t.Errorf("failed to get the address of conflicted gateway %s", conflictedGatewayKey.String())
-			}
-
-			var path, host string
-			if conflictedGatewayKey.Name == "merged-gateway-3" {
-				path = "/merge3"
-				host = "www.example3.com"
-			} else {
-				path = "/merge4"
-				host = "www.example4.com"
+				t.Errorf("failed to get the address of conflicted gateway %s", gw4NN.String())
 			}
 
 			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, conflictedGatewayHostPort, http.ExpectedResponse{
-				Request:   http.Request{Path: path, Host: host},
+				Request:   http.Request{Path: "/merge4", Host: "www.example4.com"},
 				Response:  http.Response{StatusCode: 404},
 				Namespace: ns,
 			})
 		})
 
 		t.Run("merged gateways under same namespace should has the same address", func(t *testing.T) {
-			if len(nonConflictedGatewayKey.String()) == 0 || len(nonConflictedRouteKey.String()) == 0 {
-				t.Error("failed to get non-conflicted gateway key")
-				t.FailNow()
-			}
-
 			gw1HostPort := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw1NN), route1NN)
 			gw1Addr, _, err := net.SplitHostPort(gw1HostPort)
 			if err != nil {
@@ -189,18 +133,19 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				t.Errorf("failed to split hostport %s of gateway %s: %v", gw2HostPort, gw2NN.String(), err)
 			}
 
-			gw3HostPort := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(nonConflictedGatewayKey), nonConflictedRouteKey)
+			gw3HostPort := kubernetes.GatewayAndHTTPRoutesMustBeAccepted(t, suite.Client, suite.TimeoutConfig, suite.ControllerName, kubernetes.NewGatewayRef(gw3NN), route3NN)
 			gw3Addr, _, err := net.SplitHostPort(gw3HostPort)
 			if err != nil {
-				t.Errorf("failed to split hostport %s of gateway %s: %v", gw3HostPort, nonConflictedGatewayKey.String(), err)
+				t.Errorf("failed to split hostport %s of gateway %s: %v", gw3HostPort, gw3NN.String(), err)
 			}
 
 			if gw1Addr != gw2Addr || gw2Addr != gw3Addr {
 				t.Errorf("inconsistent gateway address %s: %s, %s: %s and %s: %s",
-					gw1NN.String(), gw1Addr, gw2NN.String(), gw2Addr, nonConflictedGatewayKey.String(), gw3Addr)
+					gw1NN.String(), gw1Addr, gw2NN.String(), gw2Addr, gw3NN.String(), gw3Addr)
 				t.FailNow()
 			}
 
+			// Record one of the addresses to send request to since they are all the same.
 			consistentGatewayAddress = gw1Addr
 			t.Logf("got consistent gateway address: %s", consistentGatewayAddress)
 		})
@@ -229,17 +174,8 @@ var MergeGatewaysTest = suite.ConformanceTest{
 				Backend:   "infra-backend-v2",
 			})
 
-			var path, host string
-			if conflictedGatewayKey.Name == "merged-gateway-3" {
-				path = "/merge3"
-				host = "www.example3.com"
-			} else {
-				path = "/merge4"
-				host = "www.example4.com"
-			}
-
 			http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gw3HostPort, http.ExpectedResponse{
-				Request:   http.Request{Path: path, Host: host},
+				Request:   http.Request{Path: "/merge3", Host: "www.example3.com"},
 				Response:  http.Response{StatusCode: 200},
 				Namespace: ns,
 				Backend:   "infra-backend-v3",
