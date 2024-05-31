@@ -28,6 +28,17 @@ func TestGatewayAPIConformance(t *testing.T) {
 	opts.ExemptFeatures = internalconf.EnvoyGatewaySuite.ExemptFeatures
 
 	cSuite, err := suite.NewConformanceTestSuite(opts)
+
+	cSuite.FailureHooks = []suite.HookExecution{
+		{
+			Name: "status",
+			Path: "kubectl",
+			Args: []string{
+				"get", "httproutes.gateway.networking.k8s.io", "-A", "-o", "yaml",
+			},
+		},
+	}
+
 	if err != nil {
 		t.Fatalf("Error creating conformance test suite: %v", err)
 	}
