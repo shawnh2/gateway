@@ -26,6 +26,7 @@ func TestGatewayAPIConformance(t *testing.T) {
 	opts.SkipTests = internalconf.EnvoyGatewaySuite.SkipTests
 	opts.SupportedFeatures = internalconf.EnvoyGatewaySuite.SupportedFeatures
 	opts.ExemptFeatures = internalconf.EnvoyGatewaySuite.ExemptFeatures
+	opts.ReportOutputPath = "output"
 
 	cSuite, err := suite.NewConformanceTestSuite(opts)
 	if err != nil {
