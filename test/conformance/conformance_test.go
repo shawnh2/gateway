@@ -28,6 +28,9 @@ func TestGatewayAPIConformance(t *testing.T) {
 	opts.ExemptFeatures = internalconf.EnvoyGatewaySuite.ExemptFeatures
 
 	cSuite, err := suite.NewConformanceTestSuite(opts)
+	if err != nil {
+		t.Fatalf("Error creating conformance test suite: %v", err)
+	}
 
 	cSuite.FailureHooks = []suite.HookExecution{
 		{
@@ -39,9 +42,6 @@ func TestGatewayAPIConformance(t *testing.T) {
 		},
 	}
 
-	if err != nil {
-		t.Fatalf("Error creating conformance test suite: %v", err)
-	}
 	cSuite.Setup(t, tests.ConformanceTests)
 	if err := cSuite.Run(t, tests.ConformanceTests); err != nil {
 		t.Fatalf("Error running conformance tests: %v", err)
