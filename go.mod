@@ -2,7 +2,7 @@ module github.com/envoyproxy/gateway
 
 go 1.22.3
 
-replace sigs.k8s.io/gateway-api v1.1.0 => github.com/shawnh2/gateway-api v0.0.0-20240531070007-841db9db59f0
+replace sigs.k8s.io/gateway-api v1.1.0 => github.com/shawnh2/gateway-api v0.0.0-20240602072249-49ea7115b23a
 
 require (
 	fortio.org/fortio v1.63.8
