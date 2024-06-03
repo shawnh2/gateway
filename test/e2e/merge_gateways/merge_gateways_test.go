@@ -56,9 +56,20 @@ func TestMergeGateways(t *testing.T) {
 		// All e2e tests should leave Features empty.
 		SupportedFeatures: sets.New[features.SupportedFeature](features.SupportGateway),
 		SkipTests:         []string{},
+		ReportOutputPath:  "output",
 	})
 	if err != nil {
 		t.Fatalf("Failed to create ConformanceTestSuite: %v", err)
+	}
+
+	cSuite.FailureHooks = []suite.HookExecution{
+		{
+			Name: "status",
+			Path: "kubectl",
+			Args: []string{
+				"get", "httproutes.gateway.networking.k8s.io", "-A", "-o", "yaml",
+			},
+		},
 	}
 
 	// Setting up the necessary arguments for the suite instead of calling Suite.Setup method again,
