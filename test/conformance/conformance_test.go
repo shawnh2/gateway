@@ -47,4 +47,14 @@ func TestGatewayAPIConformance(t *testing.T) {
 	if err := cSuite.Run(t, tests.ConformanceTests); err != nil {
 		t.Fatalf("Error running conformance tests: %v", err)
 	}
+
+	report, err := cSuite.Report()
+	if err != nil {
+		t.Fatalf("Failed to report MergeGateways tests: %v", err)
+	}
+
+	t.Logf("start to show failure hook reports")
+	for _, hookReport := range report.FailureHookReports {
+		t.Logf("hook report for: %s, %v", hookReport.Name, hookReport.Reports)
+	}
 }
