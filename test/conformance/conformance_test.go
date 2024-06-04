@@ -26,13 +26,35 @@ func TestGatewayAPIConformance(t *testing.T) {
 	opts.SkipTests = internalconf.EnvoyGatewaySuite.SkipTests
 	opts.SupportedFeatures = internalconf.EnvoyGatewaySuite.SupportedFeatures
 	opts.ExemptFeatures = internalconf.EnvoyGatewaySuite.ExemptFeatures
+	opts.ReportOutputPath = "output"
 
 	cSuite, err := suite.NewConformanceTestSuite(opts)
 	if err != nil {
 		t.Fatalf("Error creating conformance test suite: %v", err)
 	}
+
+	cSuite.FailureHooks = []suite.HookExecution{
+		{
+			Name: "status",
+			Path: "kubectl",
+			Args: []string{
+				"get", "httproutes.gateway.networking.k8s.io", "-A", "-o", "yaml",
+			},
+		},
+	}
+
 	cSuite.Setup(t, tests.ConformanceTests)
 	if err := cSuite.Run(t, tests.ConformanceTests); err != nil {
 		t.Fatalf("Error running conformance tests: %v", err)
+	}
+
+	report, err := cSuite.Report()
+	if err != nil {
+		t.Fatalf("Failed to report MergeGateways tests: %v", err)
+	}
+
+	t.Logf("start to show failure hook reports")
+	for _, hookReport := range report.FailureHookReports {
+		t.Logf("hook report for: %s, %v", hookReport.Name, hookReport.Reports)
 	}
 }

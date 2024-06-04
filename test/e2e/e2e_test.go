@@ -59,9 +59,20 @@ func TestE2E(t *testing.T) {
 			tests.GatewayInfraResourceTest.ShortName, // https://github.com/envoyproxy/gateway/issues/3191
 			tests.UseClientProtocolTest.ShortName,    // https://github.com/envoyproxy/gateway/issues/3473
 		},
+		ReportOutputPath: "output",
 	})
 	if err != nil {
 		t.Fatalf("Failed to create ConformanceTestSuite: %v", err)
+	}
+
+	cSuite.FailureHooks = []suite.HookExecution{
+		{
+			Name: "status",
+			Path: "kubectl",
+			Args: []string{
+				"get", "httproutes.gateway.networking.k8s.io", "-A", "-o", "yaml",
+			},
+		},
 	}
 
 	cSuite.Setup(t, tests.ConformanceTests)
@@ -69,5 +80,15 @@ func TestE2E(t *testing.T) {
 	err = cSuite.Run(t, tests.ConformanceTests)
 	if err != nil {
 		t.Fatalf("Failed to run E2E tests: %v", err)
+	}
+
+	report, err := cSuite.Report()
+	if err != nil {
+		t.Fatalf("Failed to report MergeGateways tests: %v", err)
+	}
+
+	t.Logf("start to show failure hook reports")
+	for _, hookReport := range report.FailureHookReports {
+		t.Logf("hook report for: %s, %v", hookReport.Name, hookReport.Reports)
 	}
 }

@@ -56,9 +56,20 @@ func TestMergeGateways(t *testing.T) {
 		// All e2e tests should leave Features empty.
 		SupportedFeatures: sets.New[features.SupportedFeature](features.SupportGateway),
 		SkipTests:         []string{},
+		ReportOutputPath:  "output",
 	})
 	if err != nil {
 		t.Fatalf("Failed to create ConformanceTestSuite: %v", err)
+	}
+
+	cSuite.FailureHooks = []suite.HookExecution{
+		{
+			Name: "status",
+			Path: "kubectl",
+			Args: []string{
+				"get", "httproutes.gateway.networking.k8s.io", "-A", "-o", "yaml",
+			},
+		},
 	}
 
 	// Setting up the necessary arguments for the suite instead of calling Suite.Setup method again,
@@ -71,5 +82,15 @@ func TestMergeGateways(t *testing.T) {
 	err = cSuite.Run(t, tests.MergeGatewaysTests)
 	if err != nil {
 		t.Fatalf("Failed to run MergeGateways tests: %v", err)
+	}
+
+	report, err := cSuite.Report()
+	if err != nil {
+		t.Fatalf("Failed to report MergeGateways tests: %v", err)
+	}
+
+	t.Logf("start to show failure hook reports")
+	for _, hookReport := range report.FailureHookReports {
+		t.Logf("hook report for: %s, %v", hookReport.Name, hookReport.Reports)
 	}
 }
