@@ -57,7 +57,7 @@ jobs:
         id: result
         uses: juliangruber/read-file-action@v1
         with:
-          path: ./benchmark_report.md
+          path: benchmark_report.md
 
       - name: Comment
         run: |
