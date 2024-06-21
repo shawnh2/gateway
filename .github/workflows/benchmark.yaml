@@ -62,9 +62,6 @@ jobs:
         uses: juliangruber/read-file-action@v1
         with:
           path: bin/benchmark_report.md
-        run: |
-          pwd
-          ls .
 
       - name: Comment
         run: |
