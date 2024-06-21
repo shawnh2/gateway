@@ -55,7 +55,12 @@ jobs:
           BENCHMARK_MEMORY_LIMITS: ${{ github.event.inputs.memory_limits || 2048 }}
         run: make benchmark
 
+      - name: List directory contents for debugging
+        run: |
+          ls -R
+          pwd
+
       - name: Comment Benchmark results
         uses: thollander/actions-comment-pull-request@v2
         with:
-          filePath: benchmark_report.md
+          filePath: ./bin/benchmark/report.md
