@@ -50,7 +50,7 @@ jobs:
           BENCHMARK_DURATION: ${{ github.event.inputs.duration || 90 }}
           BENCHMARK_CPU_LIMITS: ${{ github.event.inputs.cpu_limits || 1000 }}
           BENCHMARK_MEMORY_LIMITS: ${{ github.event.inputs.memory_limits || 2048 }}
-          BENCHMARK_REPORT_PATH: ./benchmark_report.md
+          BENCHMARK_REPORT_PATH: bin/benchmark_report.md
         run: |
           pwd
           make benchmark
@@ -61,7 +61,10 @@ jobs:
         id: result
         uses: juliangruber/read-file-action@v1
         with:
-          path: ./benchmark_report.md
+          path: bin/benchmark_report.md
+        run: |
+          pwd
+          ls .
 
       - name: Comment
         run: |
