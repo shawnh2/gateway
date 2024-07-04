@@ -11,7 +11,7 @@ on:
     - "**/*.png"
   workflow_run:
     workflows:
-      - Build and Test
+      - "Build and Test"
     types:
       - completed
 
@@ -39,6 +39,7 @@ jobs:
       with:
         name: benchmark_report
         path: release-artifacts
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build egctl latest multiarch binaries
       run: |

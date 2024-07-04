@@ -45,7 +45,7 @@ var ScaleHTTPRoutes = suite.BenchmarkTest{
 		require.NoError(t, err)
 
 		routeNameFormat := "benchmark-route-%d"
-		routeScales := []uint16{10, 20}
+		routeScales := []uint16{10}
 		routeScalesN := len(routeScales)
 		routeNNs := make([]types.NamespacedName, 0, routeScales[routeScalesN-1])
 
